@@ -1,0 +1,486 @@
+syntax = "proto3";
+
+package api.docstore.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "api/common/v1/common.proto";
+import "api/common/v1/errors.proto";
+import "validate/validate.proto";
+
+option go_package = "rag/api/docstore/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.docstore.v1";
+
+// DocStore服务 - 文档管理、分片存储和向量检索
+service DocStore {
+  // 文档上传和分片
+  rpc UploadDocument(UploadDocumentRequest) returns (UploadDocumentResponse) {
+    option (google.api.http) = {
+      post: "/v1/documents"
+      body: "*"
+    };
+  }
+  
+  // 异步文档处理
+  rpc UploadDocumentAsync(UploadDocumentAsyncRequest) returns (UploadDocumentAsyncResponse) {
+    option (google.api.http) = {
+      post: "/v1/documents/async"
+      body: "*"
+    };
+  }
+  
+  // 相似度检索
+  rpc SearchSimilar(SearchSimilarRequest) returns (SearchSimilarResponse) {
+    option (google.api.http) = {
+      post: "/v1/search/similar"
+      body: "*"
+    };
+  }
+  
+  // 混合检索（向量+关键词）
+  rpc SearchHybrid(SearchHybridRequest) returns (SearchHybridResponse) {
+    option (google.api.http) = {
+      post: "/v1/search/hybrid"
+      body: "*"
+    };
+  }
+  
+  // 获取文档信息
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse) {
+    option (google.api.http) = {
+      get: "/v1/documents/{document_id}"
+    };
+  }
+  
+  // 获取文档分片
+  rpc GetDocumentChunks(GetDocumentChunksRequest) returns (GetDocumentChunksResponse) {
+    option (google.api.http) = {
+      get: "/v1/documents/{document_id}/chunks"
+    };
+  }
+  
+  // 根据ID获取分片
+  rpc GetChunksByIds(GetChunksByIdsRequest) returns (GetChunksByIdsResponse) {
+    option (google.api.http) = {
+      post: "/v1/chunks/batch"
+      body: "*"
+    };
+  }
+  
+  // 删除文档
+  rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse) {
+    option (google.api.http) = {
+      delete: "/v1/documents/{document_id}"
+    };
+  }
+  
+  // 更新文档元数据
+  rpc UpdateMetadata(UpdateMetadataRequest) returns (UpdateMetadataResponse) {
+    option (google.api.http) = {
+      put: "/v1/documents/{document_id}/metadata"
+      body: "*"
+    };
+  }
+  
+  // 重新索引文档
+  rpc ReindexDocument(ReindexDocumentRequest) returns (ReindexDocumentResponse) {
+    option (google.api.http) = {
+      post: "/v1/documents/{document_id}/reindex"
+      body: "*"
+    };
+  }
+  
+  // 获取存储统计
+  rpc GetStorageStats(GetStorageStatsRequest) returns (GetStorageStatsResponse) {
+    option (google.api.http) = {
+      get: "/v1/stats/storage"
+    };
+  }
+  
+  // 健康检查
+  rpc HealthCheck(google.protobuf.Empty) returns (api.common.v1.HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/v1/health"
+    };
+  }
+}
+
+// ========== 文档上传相关消息 ==========
+
+message QueryEmbedding {
+  repeated float values = 1;
+}
+
+message UploadDocumentRequest {
+  bytes file_content = 1 [(validate.rules).bytes.min_len = 1];
+  string title = 2 [(validate.rules).string.min_len = 1];
+  string file_type = 3 [(validate.rules).string.min_len = 1];
+  api.common.v1.Metadata metadata = 4;
+  DocumentProcessingConfig processing_config = 5;
+}
+
+message DocumentProcessingConfig {
+  ChunkingStrategy chunking_strategy = 1;
+  EmbeddingConfig embedding_config = 2;
+  IndexingConfig indexing_config = 3;
+  bool enable_ocr = 4;
+  string language = 5;
+  map<string, string> custom_settings = 6;
+}
+
+message ChunkingStrategy {
+  string strategy_type = 1; // "paragraph", "fixed_length", "sentence", "semantic", "hybrid"
+  int32 chunk_size = 2 [(validate.rules).int32 = {gte: 100, lte: 4096}];
+  int32 chunk_overlap = 3 [(validate.rules).int32 = {gte: 0, lte: 1000}];
+  float similarity_threshold = 4; // for semantic chunking
+  map<string, string> strategy_parameters = 5;
+}
+
+message EmbeddingConfig {
+  string model_name = 1;
+  bool normalize_embeddings = 2;
+  string pooling_strategy = 3;
+  map<string, string> model_parameters = 4;
+}
+
+message IndexingConfig {
+  repeated string index_types = 1; // "vector", "fulltext", "metadata"
+  VectorIndexConfig vector_config = 2;
+  FullTextIndexConfig fulltext_config = 3;
+  bool enable_async_indexing = 4;
+}
+
+message VectorIndexConfig {
+  string index_type = 1; // "hnsw", "ivf", "flat"
+  int32 nlist = 2; // for IVF
+  int32 m = 3; // for HNSW
+  int32 ef_construction = 4; // for HNSW
+  map<string, string> parameters = 5;
+}
+
+message FullTextIndexConfig {
+  repeated string analyzers = 1;
+  repeated string stop_words = 2;
+  bool enable_stemming = 3;
+  bool enable_synonyms = 4;
+  map<string, string> parameters = 5;
+}
+
+message UploadDocumentResponse {
+  string document_id = 1;
+  api.common.v1.ProcessingStatus status = 2;
+  DocumentProcessingResult processing_result = 3;
+  api.common.v1.DocumentInfo document_info = 4;
+}
+
+message DocumentProcessingResult {
+  int32 total_chunks_created = 1;
+  int32 embeddings_generated = 2;
+  int32 indexes_created = 3;
+  int64 processing_time_ms = 4;
+  repeated ProcessingWarning warnings = 5;
+  map<string, string> processing_metadata = 6;
+}
+
+message ProcessingWarning {
+  string warning_type = 1;
+  string message = 2;
+  string suggestion = 3;
+}
+
+// ========== 异步文档处理相关消息 ==========
+
+message UploadDocumentAsyncRequest {
+  bytes file_content = 1 [(validate.rules).bytes.min_len = 1];
+  string title = 2 [(validate.rules).string.min_len = 1];
+  string file_type = 3 [(validate.rules).string.min_len = 1];
+  api.common.v1.Metadata metadata = 4;
+  DocumentProcessingConfig processing_config = 5;
+  string callback_url = 6;
+  int32 priority = 7 [(validate.rules).int32 = {gte: 1, lte: 10}];
+}
+
+message UploadDocumentAsyncResponse {
+  string task_id = 1;
+  string document_id = 2;
+  api.common.v1.ProcessingStatus status = 3;
+  int32 estimated_processing_time_seconds = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+// ========== 检索相关消息 ==========
+
+message SearchSimilarRequest {
+  oneof query_source {
+    string query_text = 1;
+    QueryEmbedding query_embedding = 2;
+  }
+  
+  SearchOptions options = 3;
+  repeated api.common.v1.Filter filters = 4;
+}
+
+message SearchOptions {
+  int32 top_k = 1 [(validate.rules).int32 = {gte: 1, lte: 1000}];
+  float similarity_threshold = 2 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  string similarity_metric = 3; // "cosine", "dot_product", "euclidean"
+  repeated string document_ids = 4; // limit search to specific documents
+  repeated string chunk_types = 5; // filter by chunk type
+  bool include_metadata = 6;
+  bool include_embeddings = 7;
+  string embedding_model = 8; // required if using query_text
+}
+
+message SearchSimilarResponse {
+  repeated api.common.v1.SimilarityResult results = 1;
+  SearchMetadata metadata = 2;
+}
+
+message SearchMetadata {
+  int32 total_searched = 1;
+  int32 total_returned = 2;
+  int64 search_time_ms = 3;
+  string model_used = 4;
+  string similarity_metric = 5;
+  map<string, string> debug_info = 6;
+}
+
+// ========== 混合检索相关消息 ==========
+
+message SearchHybridRequest {
+  string query_text = 1 [(validate.rules).string.min_len = 1];
+  HybridSearchOptions options = 2;
+  repeated api.common.v1.Filter filters = 3;
+}
+
+message HybridSearchOptions {
+  int32 top_k = 1 [(validate.rules).int32 = {gte: 1, lte: 1000}];
+  float vector_weight = 2 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  float fulltext_weight = 3 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  VectorSearchConfig vector_config = 4;
+  FullTextSearchConfig fulltext_config = 5;
+  string fusion_method = 6; // "rrf", "weighted_sum", "max", "harmonic_mean"
+  bool include_metadata = 7;
+  string embedding_model = 8;
+}
+
+message VectorSearchConfig {
+  float similarity_threshold = 1;
+  string similarity_metric = 2;
+  bool normalize_scores = 3;
+}
+
+message FullTextSearchConfig {
+  string analyzer = 1;
+  repeated string fields = 2; // search specific fields
+  bool enable_fuzzy_search = 3;
+  float fuzzy_threshold = 4;
+  bool enable_phrase_search = 5;
+}
+
+message SearchHybridResponse {
+  repeated HybridSearchResult results = 1;
+  HybridSearchMetadata metadata = 2;
+}
+
+message HybridSearchResult {
+  api.common.v1.ChunkInfo chunk = 1;
+  float final_score = 2;
+  float vector_score = 3;
+  float fulltext_score = 4;
+  ScoreComponents score_components = 5;
+}
+
+message ScoreComponents {
+  float vector_contribution = 1;
+  float fulltext_contribution = 2;
+  float metadata_boost = 3;
+  float position_boost = 4;
+  map<string, float> custom_scores = 5;
+}
+
+message HybridSearchMetadata {
+  SearchMetadata vector_metadata = 1;
+  FullTextSearchMetadata fulltext_metadata = 2;
+  FusionMetadata fusion_metadata = 3;
+}
+
+message FullTextSearchMetadata {
+  int32 total_matches = 1;
+  int64 search_time_ms = 2;
+  string analyzer_used = 3;
+  repeated string expanded_terms = 4;
+  map<string, string> debug_info = 5;
+}
+
+message FusionMetadata {
+  string fusion_method = 1;
+  float vector_weight = 2;
+  float fulltext_weight = 3;
+  int64 fusion_time_ms = 4;
+}
+
+// ========== 文档获取相关消息 ==========
+
+message GetDocumentRequest {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  repeated string include_fields = 2; // "content", "chunks", "metadata", "stats"
+  bool include_chunks = 3;
+  bool include_embeddings = 4;
+}
+
+message GetDocumentResponse {
+  api.common.v1.DocumentInfo document_info = 1;
+  string content = 2;
+  repeated api.common.v1.ChunkInfo chunks = 3;
+  DocumentStatistics stats = 4;
+}
+
+message DocumentStatistics {
+  int32 total_chunks = 1;
+  int32 total_tokens = 2;
+  int32 average_chunk_size = 3;
+  int32 query_count = 4;
+  google.protobuf.Timestamp last_accessed = 5;
+  map<string, int32> chunk_type_distribution = 6;
+  repeated float embedding_stats = 7; // mean, std, min, max of embedding norms
+}
+
+message GetDocumentChunksRequest {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  api.common.v1.PaginationRequest pagination = 2;
+  repeated api.common.v1.Filter filters = 3;
+  bool include_embeddings = 4;
+}
+
+message GetDocumentChunksResponse {
+  repeated api.common.v1.ChunkInfo chunks = 1;
+  api.common.v1.PaginationResponse pagination = 2;
+}
+
+message GetChunksByIdsRequest {
+  repeated string chunk_ids = 1 [(validate.rules).repeated.min_items = 1];
+  bool include_embeddings = 2;
+  bool include_metadata = 3;
+}
+
+message GetChunksByIdsResponse {
+  repeated api.common.v1.ChunkInfo chunks = 1;
+  repeated string not_found_chunk_ids = 2;
+}
+
+// ========== 文档操作相关消息 ==========
+
+message DeleteDocumentRequest {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  DeleteOptions options = 2;
+}
+
+message DeleteOptions {
+  bool force_delete = 1;
+  bool delete_chunks = 2;
+  bool delete_embeddings = 3;
+  bool delete_indexes = 4;
+  string reason = 5;
+}
+
+message DeleteDocumentResponse {
+  api.common.v1.ProcessingStatus status = 1;
+  CleanupResult cleanup_result = 2;
+}
+
+message CleanupResult {
+  int32 chunks_deleted = 1;
+  int32 embeddings_deleted = 2;
+  int32 indexes_deleted = 3;
+  int64 storage_freed_bytes = 4;
+  google.protobuf.Timestamp deletion_completed_at = 5;
+}
+
+message UpdateMetadataRequest {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  api.common.v1.Metadata metadata = 2;
+  repeated string update_fields = 3;
+  bool merge_metadata = 4; // true: merge, false: replace
+}
+
+message UpdateMetadataResponse {
+  api.common.v1.ProcessingStatus status = 1;
+  api.common.v1.Metadata updated_metadata = 2;
+  int32 metadata_version = 3;
+}
+
+message ReindexDocumentRequest {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  ReindexOptions options = 2;
+}
+
+message ReindexOptions {
+  repeated string index_types = 1; // "vector", "fulltext", "metadata"
+  bool force_reindex = 2;
+  EmbeddingConfig new_embedding_config = 3;
+  IndexingConfig new_indexing_config = 4;
+}
+
+message ReindexDocumentResponse {
+  api.common.v1.ProcessingStatus status = 1;
+  ReindexResult result = 2;
+}
+
+message ReindexResult {
+  repeated string indexes_rebuilt = 1;
+  int32 chunks_reindexed = 2;
+  int64 reindexing_time_ms = 3;
+  google.protobuf.Timestamp completed_at = 4;
+}
+
+// ========== 存储统计相关消息 ==========
+
+message GetStorageStatsRequest {
+  string time_range = 1; // "1h", "24h", "7d", "30d"
+  repeated string metric_types = 2; // "storage", "performance", "usage"
+}
+
+message GetStorageStatsResponse {
+  StorageStatistics storage_stats = 1;
+  PerformanceStatistics performance_stats = 2;
+  UsageStatistics usage_stats = 3;
+  google.protobuf.Timestamp collected_at = 4;
+}
+
+message StorageStatistics {
+  int64 total_documents = 1;
+  int64 total_chunks = 2;
+  int64 total_embeddings = 3;
+  int64 storage_used_bytes = 4;
+  int64 index_size_bytes = 5;
+  map<string, int64> storage_by_type = 6;
+  map<string, int64> documents_by_status = 7;
+}
+
+message PerformanceStatistics {
+  float avg_search_latency_ms = 1;
+  float avg_indexing_latency_ms = 2;
+  int32 search_qps = 3;
+  int32 indexing_qps = 4;
+  float cache_hit_rate = 5;
+  map<string, float> latency_percentiles = 6;
+}
+
+message UsageStatistics {
+  int64 total_searches = 1;
+  int64 total_documents_uploaded = 2;
+  int64 total_documents_deleted = 3;
+  map<string, int64> searches_by_type = 4;
+  map<string, int64> uploads_by_file_type = 5;
+  repeated TopQueriesStats top_queries = 6;
+}
+
+message TopQueriesStats {
+  string query = 1;
+  int32 count = 2;
+  float avg_latency_ms = 3;
+  google.protobuf.Timestamp last_executed = 4;
+}

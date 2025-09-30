@@ -1,0 +1,307 @@
+syntax = "proto3";
+
+package api.preprocessor.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "api/common/v1/common.proto";
+import "api/common/v1/errors.proto";
+import "validate/validate.proto";
+
+option go_package = "rag/api/preprocessor/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.preprocessor.v1";
+
+// Preprocessor服务 - 查询预处理、改写和扩展
+service Preprocessor {
+  // 查询预处理
+  rpc ProcessQuery(ProcessQueryRequest) returns (ProcessQueryResponse) {
+    option (google.api.http) = {
+      post: "/v1/process-query"
+      body: "*"
+    };
+  }
+  
+  // 查询改写
+  rpc RewriteQuery(RewriteQueryRequest) returns (RewriteQueryResponse) {
+    option (google.api.http) = {
+      post: "/v1/rewrite-query"
+      body: "*"
+    };
+  }
+  
+  // 同义词扩展
+  rpc ExpandSynonyms(ExpandSynonymsRequest) returns (ExpandSynonymsResponse) {
+    option (google.api.http) = {
+      post: "/v1/expand-synonyms"
+      body: "*"
+    };
+  }
+  
+  // 批量查询处理
+  rpc ProcessBatchQueries(ProcessBatchQueriesRequest) returns (ProcessBatchQueriesResponse) {
+    option (google.api.http) = {
+      post: "/v1/process-batch"
+      body: "*"
+    };
+  }
+  
+  // 获取处理器配置
+  rpc GetProcessorConfig(google.protobuf.Empty) returns (ProcessorConfigResponse) {
+    option (google.api.http) = {
+      get: "/v1/config"
+    };
+  }
+  
+  // 更新处理器配置
+  rpc UpdateProcessorConfig(UpdateProcessorConfigRequest) returns (ProcessorConfigResponse) {
+    option (google.api.http) = {
+      put: "/v1/config"
+      body: "*"
+    };
+  }
+  
+  // 健康检查
+  rpc HealthCheck(google.protobuf.Empty) returns (api.common.v1.HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/v1/health"
+    };
+  }
+}
+
+// ========== 查询处理相关消息 ==========
+
+message ProcessQueryRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  ProcessingOptions options = 2;
+  api.common.v1.QueryContext context = 3;
+}
+
+message ProcessingOptions {
+  bool enable_cleaning = 1;
+  bool enable_rewriting = 2;
+  bool enable_synonym_expansion = 3;
+  bool enable_spell_correction = 4;
+  bool enable_language_detection = 5;
+  string target_language = 6;
+  CleaningOptions cleaning_options = 7;
+  RewritingOptions rewriting_options = 8;
+  SynonymOptions synonym_options = 9;
+}
+
+message CleaningOptions {
+  bool remove_special_chars = 1;
+  bool normalize_whitespace = 2;
+  bool fix_encoding = 3;
+  bool remove_duplicates = 4;
+  repeated string stop_words = 5;
+  string normalization_form = 6; // "NFC", "NFD", "NFKC", "NFKD"
+}
+
+message RewritingOptions {
+  string rewrite_strategy = 1; // "grammar_fix", "formalization", "clarification", "expansion"
+  float confidence_threshold = 2 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  int32 max_alternatives = 3 [(validate.rules).int32 = {gte: 1, lte: 10}];
+  bool preserve_intent = 4;
+  repeated string domain_keywords = 5;
+}
+
+message SynonymOptions {
+  repeated string synonym_sources = 1; // "wordnet", "custom", "domain_specific"
+  float similarity_threshold = 2 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  int32 max_synonyms_per_word = 3 [(validate.rules).int32 = {gte: 1, lte: 20}];
+  bool include_hyponyms = 4;
+  bool include_hypernyms = 5;
+  string language = 6;
+}
+
+message ProcessQueryResponse {
+  string original_query = 1;
+  string processed_query = 2;
+  repeated ProcessingStep processing_steps = 3;
+  ProcessingMetadata metadata = 4;
+  repeated QueryAlternative alternatives = 5;
+}
+
+message ProcessingStep {
+  string step_name = 1;
+  string input_text = 2;
+  string output_text = 3;
+  float confidence_score = 4;
+  map<string, string> step_metadata = 5;
+  google.protobuf.Timestamp processed_at = 6;
+}
+
+message ProcessingMetadata {
+  string detected_language = 1;
+  float processing_confidence = 2;
+  int64 processing_time_ms = 3;
+  repeated string applied_strategies = 4;
+  map<string, string> debug_info = 5;
+  google.protobuf.Timestamp processed_at = 6;
+}
+
+message QueryAlternative {
+  string query_text = 1;
+  float confidence_score = 2;
+  string generation_method = 3; // "rewrite", "synonym_expansion", "paraphrase"
+  map<string, string> metadata = 4;
+}
+
+// ========== 查询改写相关消息 ==========
+
+message RewriteQueryRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  RewritingOptions options = 2;
+  api.common.v1.QueryContext context = 3;
+}
+
+message RewriteQueryResponse {
+  string original_query = 1;
+  repeated RewrittenQuery rewritten_queries = 2;
+  RewritingMetadata metadata = 3;
+}
+
+message RewrittenQuery {
+  string query_text = 1;
+  float confidence_score = 2;
+  string rewrite_type = 3; // "grammar_correction", "formalization", "clarification"
+  repeated RewriteChange changes = 4;
+  map<string, string> metadata = 5;
+}
+
+message RewriteChange {
+  string original_text = 1;
+  string rewritten_text = 2;
+  string change_type = 3; // "grammar", "vocabulary", "structure"
+  string reason = 4;
+  float confidence = 5;
+}
+
+message RewritingMetadata {
+  string model_used = 1;
+  int64 processing_time_ms = 2;
+  repeated string detected_issues = 3;
+  map<string, string> debug_info = 4;
+}
+
+// ========== 同义词扩展相关消息 ==========
+
+message ExpandSynonymsRequest {
+  string text = 1 [(validate.rules).string.min_len = 1];
+  SynonymOptions options = 2;
+  repeated string focus_words = 3; // specific words to expand
+}
+
+message ExpandSynonymsResponse {
+  string original_text = 1;
+  repeated ExpandedWord expanded_words = 2;
+  repeated string expanded_queries = 3;
+  SynonymMetadata metadata = 4;
+}
+
+message ExpandedWord {
+  string original_word = 1;
+  repeated Synonym synonyms = 2;
+  string part_of_speech = 3;
+  map<string, string> word_metadata = 4;
+}
+
+message Synonym {
+  string word = 1;
+  float similarity_score = 2;
+  string source = 3; // "wordnet", "custom", "embedding"
+  string relation_type = 4; // "synonym", "hyponym", "hypernym"
+  map<string, string> metadata = 5;
+}
+
+message SynonymMetadata {
+  repeated string sources_used = 1;
+  int32 total_synonyms_found = 2;
+  int64 processing_time_ms = 3;
+  string language_detected = 4;
+  map<string, string> debug_info = 5;
+}
+
+// ========== 批量处理相关消息 ==========
+
+message ProcessBatchQueriesRequest {
+  repeated string queries = 1 [(validate.rules).repeated.min_items = 1];
+  ProcessingOptions options = 2;
+  string batch_id = 3;
+}
+
+message ProcessBatchQueriesResponse {
+  string batch_id = 1;
+  repeated BatchQueryResult results = 2;
+  BatchProcessingMetadata metadata = 3;
+}
+
+message BatchQueryResult {
+  int32 index = 1;
+  string original_query = 2;
+  string processed_query = 3;
+  api.common.v1.ProcessingStatus status = 4;
+  string error_message = 5;
+  ProcessingMetadata processing_metadata = 6;
+}
+
+message BatchProcessingMetadata {
+  int32 total_queries = 1;
+  int32 successful_processes = 2;
+  int32 failed_processes = 3;
+  int64 total_processing_time_ms = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp completed_at = 6;
+}
+
+// ========== 配置相关消息 ==========
+
+message ProcessorConfigResponse {
+  ProcessorConfig config = 1;
+  string version = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message UpdateProcessorConfigRequest {
+  ProcessorConfig config = 1;
+  repeated string update_fields = 2;
+}
+
+message ProcessorConfig {
+  DefaultProcessingOptions default_options = 1;
+  ModelConfig model_config = 2;
+  PerformanceConfig performance_config = 3;
+  map<string, string> custom_settings = 4;
+}
+
+message DefaultProcessingOptions {
+  ProcessingOptions processing_options = 1;
+  CleaningOptions cleaning_options = 2;
+  RewritingOptions rewriting_options = 3;
+  SynonymOptions synonym_options = 4;
+}
+
+message ModelConfig {
+  string rewriting_model = 1;
+  string language_detection_model = 2;
+  repeated SynonymSourceConfig synonym_sources = 3;
+  map<string, string> model_parameters = 4;
+}
+
+message SynonymSourceConfig {
+  string source_name = 1;
+  string source_type = 2; // "database", "api", "file"
+  string connection_string = 3;
+  map<string, string> configuration = 4;
+  bool enabled = 5;
+}
+
+message PerformanceConfig {
+  int32 max_concurrent_requests = 1;
+  int32 request_timeout_ms = 2;
+  int32 batch_size_limit = 3;
+  bool enable_caching = 4;
+  int32 cache_ttl_seconds = 5;
+}

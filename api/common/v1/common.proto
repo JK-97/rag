@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package api.common.v1;
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "rag/api/common/v1;v1";
+
+// 通用元数据信息
+message Metadata {
+  map<string, string> data = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+// 分页请求参数
+message PaginationRequest {
+  int32 page = 1 [(validate.rules).int32.gte = 1];
+  int32 page_size = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  string sort_by = 3;
+  bool sort_desc = 4;
+}
+
+// 分页响应信息
+message PaginationResponse {
+  int32 page = 1;
+  int32 page_size = 2;
+  int64 total = 3;
+  int32 total_pages = 4;
+}
+
+// 过滤条件
+message Filter {
+  string field = 1 [(validate.rules).string.min_len = 1];
+  string operator = 2 [(validate.rules).string = {in: ["eq", "ne", "gt", "gte", "lt", "lte", "like", "in"]}];
+  repeated string values = 3;
+}
+
+// 排序条件
+message Sort {
+  string field = 1 [(validate.rules).string.min_len = 1];
+  bool desc = 2;
+}
+
+// 健康检查请求
+message HealthCheckRequest {}
+
+// 健康检查响应
+message HealthCheckResponse {
+  string status = 1; // "SERVING", "NOT_SERVING", "SERVICE_UNKNOWN"
+  string service = 2;
+  string version = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  map<string, string> details = 5;
+}
+
+// 文档基础信息
+message DocumentInfo {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  string title = 2 [(validate.rules).string.min_len = 1];
+  string file_type = 3;
+  int64 file_size = 4;
+  int32 total_chunks = 5;
+  Metadata metadata = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+// 文档片段信息
+message ChunkInfo {
+  string chunk_id = 1 [(validate.rules).string.min_len = 1];
+  string document_id = 2 [(validate.rules).string.min_len = 1];
+  string content = 3;
+  int32 start_position = 4;
+  int32 end_position = 5;
+  int32 chunk_index = 6;
+  string chunk_type = 7;
+  int32 token_count = 8;
+  repeated float embedding = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+// 相似度结果
+message SimilarityResult {
+  string chunk_id = 1;
+  string document_id = 2;
+  float score = 3 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  ChunkInfo chunk = 4;
+}
+
+// 查询上下文
+message QueryContext {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  string session_id = 2;
+  string user_id = 3;
+  map<string, string> parameters = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// 处理状态
+enum ProcessingStatus {
+  PROCESSING_STATUS_UNSPECIFIED = 0;
+  PROCESSING_STATUS_PENDING = 1;
+  PROCESSING_STATUS_PROCESSING = 2;
+  PROCESSING_STATUS_COMPLETED = 3;
+  PROCESSING_STATUS_FAILED = 4;
+  PROCESSING_STATUS_CANCELLED = 5;
+}
+
+// 任务状态信息
+message TaskStatus {
+  string task_id = 1;
+  ProcessingStatus status = 2;
+  float progress = 3 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  string message = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+}

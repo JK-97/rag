@@ -1,0 +1,1465 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/assembler_svc.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Assembler"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/assemble/batch": {
+      "post": {
+        "summary": "批量上下文构建",
+        "operationId": "Assembler_AssembleBatchContexts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AssembleBatchContextsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AssembleBatchContextsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Assembler"
+        ]
+      }
+    },
+    "/v1/assemble/context": {
+      "post": {
+        "summary": "构建上下文",
+        "operationId": "Assembler_AssembleContext",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AssembleContextResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AssembleContextRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Assembler"
+        ]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "summary": "健康检查",
+        "operationId": "Assembler_HealthCheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Assembler"
+        ]
+      }
+    },
+    "/v1/optimize/content": {
+      "post": {
+        "summary": "内容优化",
+        "operationId": "Assembler_OptimizeContent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1OptimizeContentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1OptimizeContentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Assembler"
+        ]
+      }
+    },
+    "/v1/render/template": {
+      "post": {
+        "summary": "模板渲染",
+        "operationId": "Assembler_RenderTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RenderTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RenderTemplateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Assembler"
+        ]
+      }
+    },
+    "/v1/split/content": {
+      "post": {
+        "summary": "分割长文本",
+        "operationId": "Assembler_SplitContent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SplitContentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SplitContentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Assembler"
+        ]
+      }
+    },
+    "/v1/templates": {
+      "get": {
+        "summary": "获取模板列表",
+        "operationId": "Assembler_ListTemplates",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListTemplatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.sortBy",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.sortDesc",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Assembler"
+        ]
+      }
+    },
+    "/v1/tokens/estimate": {
+      "post": {
+        "summary": "估算Token数量",
+        "operationId": "Assembler_EstimateTokens",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EstimateTokensResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EstimateTokensRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Assembler"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1AssembleBatchContextsRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BatchContextRequest"
+          }
+        },
+        "batchId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AssembleBatchContextsResponse": {
+      "type": "object",
+      "properties": {
+        "batchId": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BatchContextResult"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1BatchAssemblyMetadata"
+        }
+      }
+    },
+    "v1AssembleContextRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DocumentChunk"
+          }
+        },
+        "options": {
+          "$ref": "#/definitions/v1AssemblyOptions"
+        },
+        "template": {
+          "$ref": "#/definitions/v1ContextTemplate"
+        }
+      }
+    },
+    "v1AssembleContextResponse": {
+      "type": "object",
+      "properties": {
+        "assembledContext": {
+          "type": "string"
+        },
+        "contextMetadata": {
+          "$ref": "#/definitions/v1ContextMetadata"
+        },
+        "usedChunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1UsedChunk"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1AssemblyOptions": {
+      "type": "object",
+      "properties": {
+        "maxContextLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "tokenizerName": {
+          "type": "string"
+        },
+        "selectionStrategy": {
+          "$ref": "#/definitions/v1ContentSelectionStrategy"
+        },
+        "arrangementStrategy": {
+          "$ref": "#/definitions/v1ContentArrangementStrategy"
+        },
+        "preserveDocumentBoundaries": {
+          "type": "boolean"
+        },
+        "includeSourceCitations": {
+          "type": "boolean"
+        },
+        "includeMetadata": {
+          "type": "boolean"
+        },
+        "diversityThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "customOptions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1AssemblyStatistics": {
+      "type": "object",
+      "properties": {
+        "assemblyTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "duplicateChunksRemoved": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "lowQualityChunksFiltered": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "contentCompressionRatio": {
+          "type": "number",
+          "format": "float"
+        },
+        "chunksByDocumentType": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "v1BatchAssemblyMetadata": {
+      "type": "object",
+      "properties": {
+        "totalRequests": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "successfulAssemblies": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "failedAssemblies": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalProcessingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1BatchContextRequest": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "contextRequest": {
+          "$ref": "#/definitions/v1AssembleContextRequest"
+        }
+      }
+    },
+    "v1BatchContextResult": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "contextResponse": {
+          "$ref": "#/definitions/v1AssembleContextResponse"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      }
+    },
+    "v1BatchTokenCounts": {
+      "type": "object",
+      "properties": {
+        "counts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TokenCount"
+          }
+        },
+        "totalTokensAll": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "statistics": {
+          "$ref": "#/definitions/v1TokenStatistics"
+        }
+      }
+    },
+    "v1ChunkMetadata": {
+      "type": "object",
+      "properties": {
+        "documentType": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "sourceUrl": {
+          "type": "string"
+        },
+        "customMetadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "tokenCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ChunkTokenInfo": {
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string"
+        },
+        "tokenCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "estimatedContextContribution": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "v1ContentArrangementStrategy": {
+      "type": "object",
+      "properties": {
+        "arrangementType": {
+          "type": "string",
+          "title": "\"score_desc\", \"score_asc\", \"chronological\", \"logical\", \"document_grouped\""
+        },
+        "groupByDocument": {
+          "type": "boolean"
+        },
+        "groupByTopic": {
+          "type": "boolean"
+        },
+        "maintainContextFlow": {
+          "type": "boolean"
+        },
+        "sectionPriorities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SectionPriority"
+          }
+        }
+      }
+    },
+    "v1ContentChunk": {
+      "type": "object",
+      "properties": {
+        "chunkIndex": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "content": {
+          "type": "string"
+        },
+        "startPosition": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "endPosition": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "tokenCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkMetadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ContentSelectionStrategy": {
+      "type": "object",
+      "properties": {
+        "strategyType": {
+          "type": "string",
+          "title": "\"top_k\", \"threshold\", \"diverse\", \"mmr\", \"hybrid\""
+        },
+        "maxChunks": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "scoreThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "diversityWeight": {
+          "type": "number",
+          "format": "float",
+          "title": "for MMR and diverse selection"
+        },
+        "redundancyThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "priorityDocumentTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ContextMetadata": {
+      "type": "object",
+      "properties": {
+        "totalTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunksUsed": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunksFiltered": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "avgRelevanceScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "tokenizerUsed": {
+          "type": "string"
+        },
+        "statistics": {
+          "$ref": "#/definitions/v1AssemblyStatistics"
+        },
+        "assembledAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ContextTemplate": {
+      "type": "object",
+      "properties": {
+        "templateName": {
+          "type": "string"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "userPromptTemplate": {
+          "type": "string"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TemplateSection"
+          }
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ContextTokenEstimation": {
+      "type": "object",
+      "properties": {
+        "estimatedTotalTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "queryTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "contentTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "templateTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkTokenInfo": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ChunkTokenInfo"
+          }
+        }
+      }
+    },
+    "v1DocumentChunk": {
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "relevanceScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "positionInDocument": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1ChunkMetadata"
+        }
+      }
+    },
+    "v1EstimateTokensRequest": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "texts": {
+          "$ref": "#/definitions/v1TextList"
+        },
+        "contextRequest": {
+          "$ref": "#/definitions/v1AssembleContextRequest"
+        },
+        "tokenizerName": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1TokenEstimationOptions"
+        }
+      }
+    },
+    "v1EstimateTokensResponse": {
+      "type": "object",
+      "properties": {
+        "singleCount": {
+          "$ref": "#/definitions/v1TokenCount"
+        },
+        "batchCounts": {
+          "$ref": "#/definitions/v1BatchTokenCounts"
+        },
+        "contextEstimation": {
+          "$ref": "#/definitions/v1ContextTokenEstimation"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1TokenizationMetadata"
+        }
+      }
+    },
+    "v1Filter": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "过滤条件"
+    },
+    "v1HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"SERVING\", \"NOT_SERVING\", \"SERVICE_UNKNOWN\""
+        },
+        "service": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "健康检查响应"
+    },
+    "v1ListTemplatesResponse": {
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TemplateInfo"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1OptimizationOptions": {
+      "type": "object",
+      "properties": {
+        "optimizationGoal": {
+          "type": "string",
+          "title": "\"length\", \"clarity\", \"coherence\", \"relevance\""
+        },
+        "optimizationMethod": {
+          "type": "string",
+          "title": "\"summarization\", \"extraction\", \"compression\", \"paraphrasing\""
+        },
+        "aggressiveness": {
+          "type": "number",
+          "format": "float"
+        },
+        "preserveKeyInformation": {
+          "type": "boolean"
+        },
+        "preserveStructure": {
+          "type": "boolean"
+        },
+        "preservePhrases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "removePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1OptimizationResult": {
+      "type": "object",
+      "properties": {
+        "originalLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "optimizedLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "compressionRatio": {
+          "type": "number",
+          "format": "float"
+        },
+        "qualityScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "informationPreservedPercentage": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1OptimizationStep": {
+      "type": "object",
+      "properties": {
+        "stepName": {
+          "type": "string"
+        },
+        "methodUsed": {
+          "type": "string"
+        },
+        "contentLengthBefore": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "contentLengthAfter": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OptimizeContentRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1OptimizationOptions"
+        },
+        "targetLength": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1OptimizeContentResponse": {
+      "type": "object",
+      "properties": {
+        "optimizedContent": {
+          "type": "string"
+        },
+        "optimizationResult": {
+          "$ref": "#/definitions/v1OptimizationResult"
+        },
+        "stepsTaken": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1OptimizationStep"
+          }
+        }
+      }
+    },
+    "v1PaginationRequest": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "sortBy": {
+          "type": "string"
+        },
+        "sortDesc": {
+          "type": "boolean"
+        }
+      },
+      "title": "分页请求参数"
+    },
+    "v1PaginationResponse": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "total": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalPages": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "分页响应信息"
+    },
+    "v1ProcessingStatus": {
+      "type": "string",
+      "enum": [
+        "PROCESSING_STATUS_UNSPECIFIED",
+        "PROCESSING_STATUS_PENDING",
+        "PROCESSING_STATUS_PROCESSING",
+        "PROCESSING_STATUS_COMPLETED",
+        "PROCESSING_STATUS_FAILED",
+        "PROCESSING_STATUS_CANCELLED"
+      ],
+      "default": "PROCESSING_STATUS_UNSPECIFIED",
+      "title": "处理状态"
+    },
+    "v1RenderOptions": {
+      "type": "object",
+      "properties": {
+        "strictMode": {
+          "type": "boolean",
+          "title": "fail if variables missing"
+        },
+        "defaultValues": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "escapeHtml": {
+          "type": "boolean"
+        },
+        "outputFormat": {
+          "type": "string",
+          "title": "\"text\", \"markdown\", \"html\""
+        }
+      }
+    },
+    "v1RenderTemplateRequest": {
+      "type": "object",
+      "properties": {
+        "templateName": {
+          "type": "string"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "options": {
+          "$ref": "#/definitions/v1RenderOptions"
+        }
+      }
+    },
+    "v1RenderTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "renderedContent": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1TemplateRenderingMetadata"
+        },
+        "usedVariables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missingVariables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1SectionPriority": {
+      "type": "object",
+      "properties": {
+        "sectionType": {
+          "type": "string",
+          "title": "\"introduction\", \"main_content\", \"conclusion\", \"metadata\""
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "weightBoost": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "v1SplitContentRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1SplitOptions"
+        }
+      }
+    },
+    "v1SplitContentResponse": {
+      "type": "object",
+      "properties": {
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ContentChunk"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1SplitMetadata"
+        }
+      }
+    },
+    "v1SplitMetadata": {
+      "type": "object",
+      "properties": {
+        "totalChunks": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "originalLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "avgChunkSize": {
+          "type": "number",
+          "format": "float"
+        },
+        "splitStrategyUsed": {
+          "type": "string"
+        },
+        "splitTimeMs": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1SplitOptions": {
+      "type": "object",
+      "properties": {
+        "maxChunkSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkOverlap": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "splitStrategy": {
+          "type": "string",
+          "title": "\"sentence\", \"paragraph\", \"semantic\", \"fixed_length\""
+        },
+        "tokenizerName": {
+          "type": "string"
+        },
+        "preserveBoundaries": {
+          "type": "boolean"
+        },
+        "boundaryMarkers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "custom markers for splitting"
+        }
+      }
+    },
+    "v1TemplateInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "supportedVariables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredVariables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usageStatistics": {
+          "$ref": "#/definitions/v1TemplateStatistics"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1TemplateRenderingMetadata": {
+      "type": "object",
+      "properties": {
+        "templateUsed": {
+          "type": "string"
+        },
+        "variablesSubstituted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "outputLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "renderingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1TemplateSection": {
+      "type": "object",
+      "properties": {
+        "sectionName": {
+          "type": "string"
+        },
+        "sectionTemplate": {
+          "type": "string"
+        },
+        "isRequired": {
+          "type": "boolean"
+        },
+        "maxLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "formattingOptions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1TemplateStatistics": {
+      "type": "object",
+      "properties": {
+        "usageCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "avgRenderingTimeMs": {
+          "type": "number",
+          "format": "float"
+        },
+        "lastUsed": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "variableUsageFrequency": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "v1TextList": {
+      "type": "object",
+      "properties": {
+        "texts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1TokenBreakdown": {
+      "type": "object",
+      "properties": {
+        "regularTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "specialTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "punctuationTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "numberTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "customCategories": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "v1TokenCount": {
+      "type": "object",
+      "properties": {
+        "totalTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "breakdown": {
+          "$ref": "#/definitions/v1TokenBreakdown"
+        }
+      }
+    },
+    "v1TokenEstimationOptions": {
+      "type": "object",
+      "properties": {
+        "includeSpecialTokens": {
+          "type": "boolean"
+        },
+        "includeDetailedBreakdown": {
+          "type": "boolean"
+        },
+        "tokenTypesToCount": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "\"regular\", \"special\", \"punctuation\", \"numbers\""
+        }
+      }
+    },
+    "v1TokenStatistics": {
+      "type": "object",
+      "properties": {
+        "minTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "avgTokens": {
+          "type": "number",
+          "format": "float"
+        },
+        "stdDevTokens": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "v1TokenizationMetadata": {
+      "type": "object",
+      "properties": {
+        "tokenizerUsed": {
+          "type": "string"
+        },
+        "tokenizerVersion": {
+          "type": "string"
+        },
+        "tokenizationTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "tokenizerConfig": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1UsedChunk": {
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "positionInContext": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "tokenCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "relevanceScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "usageReason": {
+          "type": "string",
+          "title": "\"high_relevance\", \"diversity\", \"context_completion\""
+        }
+      }
+    }
+  }
+}

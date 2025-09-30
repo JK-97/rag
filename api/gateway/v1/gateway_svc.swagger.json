@@ -1,0 +1,1100 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/gateway_svc.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Gateway"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/auth/login": {
+      "post": {
+        "summary": "用户认证",
+        "operationId": "Gateway_Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1LoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1LoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Gateway"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "Gateway_RefreshToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RefreshTokenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RefreshTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Gateway"
+        ]
+      }
+    },
+    "/v1/documents": {
+      "get": {
+        "operationId": "Gateway_ListDocuments",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListDocumentsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.sortBy",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.sortDesc",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includeFields",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "Gateway"
+        ]
+      },
+      "post": {
+        "summary": "文档管理",
+        "operationId": "Gateway_UploadDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UploadDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UploadDocumentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Gateway"
+        ]
+      }
+    },
+    "/v1/documents/{documentId}": {
+      "get": {
+        "operationId": "Gateway_GetDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "includeFields",
+            "description": "\"content\", \"chunks\", \"metadata\", \"stats\"",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "Gateway"
+        ]
+      },
+      "delete": {
+        "operationId": "Gateway_DeleteDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "options.forceDelete",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "options.deleteRelatedChunks",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "options.deleteEmbeddings",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "options.reason",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Gateway"
+        ]
+      }
+    },
+    "/v1/documents/{documentId}/metadata": {
+      "put": {
+        "operationId": "Gateway_UpdateDocumentMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateDocumentMetadataResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GatewayUpdateDocumentMetadataBody"
+            }
+          }
+        ],
+        "tags": [
+          "Gateway"
+        ]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "summary": "健康检查",
+        "operationId": "Gateway_HealthCheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Gateway"
+        ]
+      }
+    },
+    "/v1/query": {
+      "post": {
+        "summary": "智能问答查询",
+        "operationId": "Gateway_Query",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1QueryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1QueryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Gateway"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "GatewayUpdateDocumentMetadataBody": {
+      "type": "object",
+      "properties": {
+        "metadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "updateFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "specify which fields to update"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1ChunkInfo": {
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "startPosition": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "endPosition": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkIndex": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkType": {
+          "type": "string"
+        },
+        "tokenCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "embedding": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "文档片段信息"
+    },
+    "v1CleanupInfo": {
+      "type": "object",
+      "properties": {
+        "chunksDeleted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "embeddingsDeleted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "storageFreedBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "deletionCompletedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1DeleteDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"deleted\", \"scheduled_for_deletion\", \"failed\""
+        },
+        "cleanupInfo": {
+          "$ref": "#/definitions/v1CleanupInfo"
+        }
+      }
+    },
+    "v1DeleteOptions": {
+      "type": "object",
+      "properties": {
+        "forceDelete": {
+          "type": "boolean"
+        },
+        "deleteRelatedChunks": {
+          "type": "boolean"
+        },
+        "deleteEmbeddings": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "v1DocumentInfo": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "fileType": {
+          "type": "string"
+        },
+        "fileSize": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalChunks": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "文档基础信息"
+    },
+    "v1DocumentListStats": {
+      "type": "object",
+      "properties": {
+        "totalDocuments": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalSizeBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalChunks": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "documentsByType": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "v1DocumentProcessingOptions": {
+      "type": "object",
+      "properties": {
+        "chunkStrategy": {
+          "type": "string",
+          "title": "\"paragraph\", \"fixed_length\", \"sentence\", \"semantic\""
+        },
+        "chunkSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkOverlap": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "embeddingModel": {
+          "type": "string"
+        },
+        "enableOcr": {
+          "type": "boolean"
+        },
+        "language": {
+          "type": "string"
+        }
+      }
+    },
+    "v1DocumentProcessingProgress": {
+      "type": "object",
+      "properties": {
+        "progressPercentage": {
+          "type": "number",
+          "format": "float"
+        },
+        "currentStage": {
+          "type": "string",
+          "title": "\"parsing\", \"chunking\", \"embedding\", \"indexing\""
+        },
+        "statusMessage": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "estimatedCompletion": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1DocumentStats": {
+      "type": "object",
+      "properties": {
+        "totalChunks": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "averageChunkSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "queryCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "lastAccessed": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1Filter": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "过滤条件"
+    },
+    "v1GetDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "documentInfo": {
+          "$ref": "#/definitions/v1DocumentInfo"
+        },
+        "content": {
+          "type": "string"
+        },
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ChunkInfo"
+          }
+        },
+        "stats": {
+          "$ref": "#/definitions/v1DocumentStats"
+        }
+      }
+    },
+    "v1HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"SERVING\", \"NOT_SERVING\", \"SERVICE_UNKNOWN\""
+        },
+        "service": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "健康检查响应"
+    },
+    "v1ListDocumentsResponse": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DocumentInfo"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        },
+        "stats": {
+          "$ref": "#/definitions/v1DocumentListStats"
+        }
+      }
+    },
+    "v1LoginRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        }
+      }
+    },
+    "v1LoginResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        },
+        "tokenType": {
+          "type": "string",
+          "title": "\"Bearer\""
+        },
+        "expiresIn": {
+          "type": "string",
+          "format": "int64",
+          "title": "seconds"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "userInfo": {
+          "$ref": "#/definitions/v1UserInfo"
+        }
+      }
+    },
+    "v1Metadata": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "通用元数据信息"
+    },
+    "v1PaginationRequest": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "sortBy": {
+          "type": "string"
+        },
+        "sortDesc": {
+          "type": "boolean"
+        }
+      },
+      "title": "分页请求参数"
+    },
+    "v1PaginationResponse": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "total": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalPages": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "分页响应信息"
+    },
+    "v1QueryMetadata": {
+      "type": "object",
+      "properties": {
+        "queryTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "processingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalDocumentsSearched": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "documentsReturned": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "modelUsed": {
+          "type": "string"
+        },
+        "debugInfo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1QueryParameters": {
+      "type": "object",
+      "properties": {
+        "maxResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "similarityThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "documentIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "documentTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "filters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "enableReranking": {
+          "type": "boolean"
+        },
+        "enableContextAssembly": {
+          "type": "boolean"
+        },
+        "maxContextLength": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1QueryRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "parameters": {
+          "$ref": "#/definitions/v1QueryParameters"
+        },
+        "userId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1QueryResponse": {
+      "type": "object",
+      "properties": {
+        "queryId": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        },
+        "relatedDocuments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RelatedDocument"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1QueryMetadata"
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1RefreshTokenRequest": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RefreshTokenResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        },
+        "tokenType": {
+          "type": "string"
+        },
+        "expiresIn": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1RelatedDocument": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "snippet": {
+          "type": "string"
+        },
+        "relevanceScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "documentType": {
+          "type": "string"
+        },
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ChunkInfo"
+          }
+        }
+      }
+    },
+    "v1Sort": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "boolean"
+        }
+      },
+      "title": "排序条件"
+    },
+    "v1UpdateDocumentMetadataResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"updated\", \"partial_update\", \"failed\""
+        },
+        "updatedMetadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "metadataVersion": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1UploadDocumentRequest": {
+      "type": "object",
+      "properties": {
+        "fileContent": {
+          "type": "string",
+          "format": "byte"
+        },
+        "title": {
+          "type": "string"
+        },
+        "fileType": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "processingOptions": {
+          "$ref": "#/definitions/v1DocumentProcessingOptions"
+        }
+      }
+    },
+    "v1UploadDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string"
+        },
+        "uploadStatus": {
+          "type": "string",
+          "title": "\"uploaded\", \"processing\", \"completed\", \"failed\""
+        },
+        "progress": {
+          "$ref": "#/definitions/v1DocumentProcessingProgress"
+        },
+        "documentInfo": {
+          "$ref": "#/definitions/v1DocumentInfo"
+        }
+      }
+    },
+    "v1UserInfo": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

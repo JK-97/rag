@@ -1,0 +1,1795 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/docstore_svc.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "DocStore"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/chunks/batch": {
+      "post": {
+        "summary": "根据ID获取分片",
+        "operationId": "DocStore_GetChunksByIds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetChunksByIdsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GetChunksByIdsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/documents": {
+      "post": {
+        "summary": "文档上传和分片",
+        "operationId": "DocStore_UploadDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UploadDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UploadDocumentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/documents/async": {
+      "post": {
+        "summary": "异步文档处理",
+        "operationId": "DocStore_UploadDocumentAsync",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UploadDocumentAsyncResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UploadDocumentAsyncRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/documents/{documentId}": {
+      "get": {
+        "summary": "获取文档信息",
+        "operationId": "DocStore_GetDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "includeFields",
+            "description": "\"content\", \"chunks\", \"metadata\", \"stats\"",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "includeChunks",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includeEmbeddings",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      },
+      "delete": {
+        "summary": "删除文档",
+        "operationId": "DocStore_DeleteDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "options.forceDelete",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "options.deleteChunks",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "options.deleteEmbeddings",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "options.deleteIndexes",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "options.reason",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/documents/{documentId}/chunks": {
+      "get": {
+        "summary": "获取文档分片",
+        "operationId": "DocStore_GetDocumentChunks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDocumentChunksResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.sortBy",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.sortDesc",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includeEmbeddings",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/documents/{documentId}/metadata": {
+      "put": {
+        "summary": "更新文档元数据",
+        "operationId": "DocStore_UpdateMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMetadataResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocStoreUpdateMetadataBody"
+            }
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/documents/{documentId}/reindex": {
+      "post": {
+        "summary": "重新索引文档",
+        "operationId": "DocStore_ReindexDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReindexDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocStoreReindexDocumentBody"
+            }
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "summary": "健康检查",
+        "operationId": "DocStore_HealthCheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/search/hybrid": {
+      "post": {
+        "summary": "混合检索（向量+关键词）",
+        "operationId": "DocStore_SearchHybrid",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SearchHybridResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchHybridRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/search/similar": {
+      "post": {
+        "summary": "相似度检索",
+        "operationId": "DocStore_SearchSimilar",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SearchSimilarResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchSimilarRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    },
+    "/v1/stats/storage": {
+      "get": {
+        "summary": "获取存储统计",
+        "operationId": "DocStore_GetStorageStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetStorageStatsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timeRange",
+            "description": "\"1h\", \"24h\", \"7d\", \"30d\"",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "metricTypes",
+            "description": "\"storage\", \"performance\", \"usage\"",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "DocStore"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "DocStoreReindexDocumentBody": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "$ref": "#/definitions/v1ReindexOptions"
+        }
+      }
+    },
+    "DocStoreUpdateMetadataBody": {
+      "type": "object",
+      "properties": {
+        "metadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "updateFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mergeMetadata": {
+          "type": "boolean",
+          "title": "true: merge, false: replace"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1ChunkInfo": {
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "startPosition": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "endPosition": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkIndex": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkType": {
+          "type": "string"
+        },
+        "tokenCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "embedding": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "文档片段信息"
+    },
+    "v1ChunkingStrategy": {
+      "type": "object",
+      "properties": {
+        "strategyType": {
+          "type": "string",
+          "title": "\"paragraph\", \"fixed_length\", \"sentence\", \"semantic\", \"hybrid\""
+        },
+        "chunkSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "chunkOverlap": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "similarityThreshold": {
+          "type": "number",
+          "format": "float",
+          "title": "for semantic chunking"
+        },
+        "strategyParameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1CleanupResult": {
+      "type": "object",
+      "properties": {
+        "chunksDeleted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "embeddingsDeleted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "indexesDeleted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "storageFreedBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "deletionCompletedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1DeleteDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "cleanupResult": {
+          "$ref": "#/definitions/v1CleanupResult"
+        }
+      }
+    },
+    "v1DeleteOptions": {
+      "type": "object",
+      "properties": {
+        "forceDelete": {
+          "type": "boolean"
+        },
+        "deleteChunks": {
+          "type": "boolean"
+        },
+        "deleteEmbeddings": {
+          "type": "boolean"
+        },
+        "deleteIndexes": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "v1DocumentInfo": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "fileType": {
+          "type": "string"
+        },
+        "fileSize": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalChunks": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "文档基础信息"
+    },
+    "v1DocumentProcessingConfig": {
+      "type": "object",
+      "properties": {
+        "chunkingStrategy": {
+          "$ref": "#/definitions/v1ChunkingStrategy"
+        },
+        "embeddingConfig": {
+          "$ref": "#/definitions/v1EmbeddingConfig"
+        },
+        "indexingConfig": {
+          "$ref": "#/definitions/v1IndexingConfig"
+        },
+        "enableOcr": {
+          "type": "boolean"
+        },
+        "language": {
+          "type": "string"
+        },
+        "customSettings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1DocumentProcessingResult": {
+      "type": "object",
+      "properties": {
+        "totalChunksCreated": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "embeddingsGenerated": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "indexesCreated": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "processingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ProcessingWarning"
+          }
+        },
+        "processingMetadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1DocumentStatistics": {
+      "type": "object",
+      "properties": {
+        "totalChunks": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "averageChunkSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "queryCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "lastAccessed": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "chunkTypeDistribution": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "embeddingStats": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "title": "mean, std, min, max of embedding norms"
+        }
+      }
+    },
+    "v1EmbeddingConfig": {
+      "type": "object",
+      "properties": {
+        "modelName": {
+          "type": "string"
+        },
+        "normalizeEmbeddings": {
+          "type": "boolean"
+        },
+        "poolingStrategy": {
+          "type": "string"
+        },
+        "modelParameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1Filter": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "过滤条件"
+    },
+    "v1FullTextIndexConfig": {
+      "type": "object",
+      "properties": {
+        "analyzers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stopWords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "enableStemming": {
+          "type": "boolean"
+        },
+        "enableSynonyms": {
+          "type": "boolean"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1FullTextSearchConfig": {
+      "type": "object",
+      "properties": {
+        "analyzer": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "search specific fields"
+        },
+        "enableFuzzySearch": {
+          "type": "boolean"
+        },
+        "fuzzyThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "enablePhraseSearch": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1FullTextSearchMetadata": {
+      "type": "object",
+      "properties": {
+        "totalMatches": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "searchTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "analyzerUsed": {
+          "type": "string"
+        },
+        "expandedTerms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "debugInfo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1FusionMetadata": {
+      "type": "object",
+      "properties": {
+        "fusionMethod": {
+          "type": "string"
+        },
+        "vectorWeight": {
+          "type": "number",
+          "format": "float"
+        },
+        "fulltextWeight": {
+          "type": "number",
+          "format": "float"
+        },
+        "fusionTimeMs": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1GetChunksByIdsRequest": {
+      "type": "object",
+      "properties": {
+        "chunkIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "includeEmbeddings": {
+          "type": "boolean"
+        },
+        "includeMetadata": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1GetChunksByIdsResponse": {
+      "type": "object",
+      "properties": {
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ChunkInfo"
+          }
+        },
+        "notFoundChunkIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1GetDocumentChunksResponse": {
+      "type": "object",
+      "properties": {
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ChunkInfo"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1GetDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "documentInfo": {
+          "$ref": "#/definitions/v1DocumentInfo"
+        },
+        "content": {
+          "type": "string"
+        },
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ChunkInfo"
+          }
+        },
+        "stats": {
+          "$ref": "#/definitions/v1DocumentStatistics"
+        }
+      }
+    },
+    "v1GetStorageStatsResponse": {
+      "type": "object",
+      "properties": {
+        "storageStats": {
+          "$ref": "#/definitions/v1StorageStatistics"
+        },
+        "performanceStats": {
+          "$ref": "#/definitions/v1PerformanceStatistics"
+        },
+        "usageStats": {
+          "$ref": "#/definitions/v1UsageStatistics"
+        },
+        "collectedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"SERVING\", \"NOT_SERVING\", \"SERVICE_UNKNOWN\""
+        },
+        "service": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "健康检查响应"
+    },
+    "v1HybridSearchMetadata": {
+      "type": "object",
+      "properties": {
+        "vectorMetadata": {
+          "$ref": "#/definitions/v1SearchMetadata"
+        },
+        "fulltextMetadata": {
+          "$ref": "#/definitions/v1FullTextSearchMetadata"
+        },
+        "fusionMetadata": {
+          "$ref": "#/definitions/v1FusionMetadata"
+        }
+      }
+    },
+    "v1HybridSearchOptions": {
+      "type": "object",
+      "properties": {
+        "topK": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "vectorWeight": {
+          "type": "number",
+          "format": "float"
+        },
+        "fulltextWeight": {
+          "type": "number",
+          "format": "float"
+        },
+        "vectorConfig": {
+          "$ref": "#/definitions/v1VectorSearchConfig"
+        },
+        "fulltextConfig": {
+          "$ref": "#/definitions/v1FullTextSearchConfig"
+        },
+        "fusionMethod": {
+          "type": "string",
+          "title": "\"rrf\", \"weighted_sum\", \"max\", \"harmonic_mean\""
+        },
+        "includeMetadata": {
+          "type": "boolean"
+        },
+        "embeddingModel": {
+          "type": "string"
+        }
+      }
+    },
+    "v1HybridSearchResult": {
+      "type": "object",
+      "properties": {
+        "chunk": {
+          "$ref": "#/definitions/v1ChunkInfo"
+        },
+        "finalScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "vectorScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "fulltextScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "scoreComponents": {
+          "$ref": "#/definitions/v1ScoreComponents"
+        }
+      }
+    },
+    "v1IndexingConfig": {
+      "type": "object",
+      "properties": {
+        "indexTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "\"vector\", \"fulltext\", \"metadata\""
+        },
+        "vectorConfig": {
+          "$ref": "#/definitions/v1VectorIndexConfig"
+        },
+        "fulltextConfig": {
+          "$ref": "#/definitions/v1FullTextIndexConfig"
+        },
+        "enableAsyncIndexing": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1Metadata": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "通用元数据信息"
+    },
+    "v1PaginationRequest": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "sortBy": {
+          "type": "string"
+        },
+        "sortDesc": {
+          "type": "boolean"
+        }
+      },
+      "title": "分页请求参数"
+    },
+    "v1PaginationResponse": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "total": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalPages": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "分页响应信息"
+    },
+    "v1PerformanceStatistics": {
+      "type": "object",
+      "properties": {
+        "avgSearchLatencyMs": {
+          "type": "number",
+          "format": "float"
+        },
+        "avgIndexingLatencyMs": {
+          "type": "number",
+          "format": "float"
+        },
+        "searchQps": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "indexingQps": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "cacheHitRate": {
+          "type": "number",
+          "format": "float"
+        },
+        "latencyPercentiles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    },
+    "v1ProcessingStatus": {
+      "type": "string",
+      "enum": [
+        "PROCESSING_STATUS_UNSPECIFIED",
+        "PROCESSING_STATUS_PENDING",
+        "PROCESSING_STATUS_PROCESSING",
+        "PROCESSING_STATUS_COMPLETED",
+        "PROCESSING_STATUS_FAILED",
+        "PROCESSING_STATUS_CANCELLED"
+      ],
+      "default": "PROCESSING_STATUS_UNSPECIFIED",
+      "title": "处理状态"
+    },
+    "v1ProcessingWarning": {
+      "type": "object",
+      "properties": {
+        "warningType": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "suggestion": {
+          "type": "string"
+        }
+      }
+    },
+    "v1QueryEmbedding": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    },
+    "v1ReindexDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "result": {
+          "$ref": "#/definitions/v1ReindexResult"
+        }
+      }
+    },
+    "v1ReindexOptions": {
+      "type": "object",
+      "properties": {
+        "indexTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "\"vector\", \"fulltext\", \"metadata\""
+        },
+        "forceReindex": {
+          "type": "boolean"
+        },
+        "newEmbeddingConfig": {
+          "$ref": "#/definitions/v1EmbeddingConfig"
+        },
+        "newIndexingConfig": {
+          "$ref": "#/definitions/v1IndexingConfig"
+        }
+      }
+    },
+    "v1ReindexResult": {
+      "type": "object",
+      "properties": {
+        "indexesRebuilt": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "chunksReindexed": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "reindexingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ScoreComponents": {
+      "type": "object",
+      "properties": {
+        "vectorContribution": {
+          "type": "number",
+          "format": "float"
+        },
+        "fulltextContribution": {
+          "type": "number",
+          "format": "float"
+        },
+        "metadataBoost": {
+          "type": "number",
+          "format": "float"
+        },
+        "positionBoost": {
+          "type": "number",
+          "format": "float"
+        },
+        "customScores": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    },
+    "v1SearchHybridRequest": {
+      "type": "object",
+      "properties": {
+        "queryText": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1HybridSearchOptions"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Filter"
+          }
+        }
+      }
+    },
+    "v1SearchHybridResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1HybridSearchResult"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1HybridSearchMetadata"
+        }
+      }
+    },
+    "v1SearchMetadata": {
+      "type": "object",
+      "properties": {
+        "totalSearched": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalReturned": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "searchTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "modelUsed": {
+          "type": "string"
+        },
+        "similarityMetric": {
+          "type": "string"
+        },
+        "debugInfo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1SearchOptions": {
+      "type": "object",
+      "properties": {
+        "topK": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "similarityThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "similarityMetric": {
+          "type": "string",
+          "title": "\"cosine\", \"dot_product\", \"euclidean\""
+        },
+        "documentIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "limit search to specific documents"
+        },
+        "chunkTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "filter by chunk type"
+        },
+        "includeMetadata": {
+          "type": "boolean"
+        },
+        "includeEmbeddings": {
+          "type": "boolean"
+        },
+        "embeddingModel": {
+          "type": "string",
+          "title": "required if using query_text"
+        }
+      }
+    },
+    "v1SearchSimilarRequest": {
+      "type": "object",
+      "properties": {
+        "queryText": {
+          "type": "string"
+        },
+        "queryEmbedding": {
+          "$ref": "#/definitions/v1QueryEmbedding"
+        },
+        "options": {
+          "$ref": "#/definitions/v1SearchOptions"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Filter"
+          }
+        }
+      }
+    },
+    "v1SearchSimilarResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SimilarityResult"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1SearchMetadata"
+        }
+      }
+    },
+    "v1SimilarityResult": {
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number",
+          "format": "float"
+        },
+        "chunk": {
+          "$ref": "#/definitions/v1ChunkInfo"
+        }
+      },
+      "title": "相似度结果"
+    },
+    "v1StorageStatistics": {
+      "type": "object",
+      "properties": {
+        "totalDocuments": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalChunks": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalEmbeddings": {
+          "type": "string",
+          "format": "int64"
+        },
+        "storageUsedBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "indexSizeBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "storageByType": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "int64"
+          }
+        },
+        "documentsByStatus": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "v1TopQueriesStats": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "avgLatencyMs": {
+          "type": "number",
+          "format": "float"
+        },
+        "lastExecuted": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1UpdateMetadataResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "updatedMetadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "metadataVersion": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1UploadDocumentAsyncRequest": {
+      "type": "object",
+      "properties": {
+        "fileContent": {
+          "type": "string",
+          "format": "byte"
+        },
+        "title": {
+          "type": "string"
+        },
+        "fileType": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "processingConfig": {
+          "$ref": "#/definitions/v1DocumentProcessingConfig"
+        },
+        "callbackUrl": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1UploadDocumentAsyncResponse": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "estimatedProcessingTimeSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1UploadDocumentRequest": {
+      "type": "object",
+      "properties": {
+        "fileContent": {
+          "type": "string",
+          "format": "byte"
+        },
+        "title": {
+          "type": "string"
+        },
+        "fileType": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1Metadata"
+        },
+        "processingConfig": {
+          "$ref": "#/definitions/v1DocumentProcessingConfig"
+        }
+      }
+    },
+    "v1UploadDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "processingResult": {
+          "$ref": "#/definitions/v1DocumentProcessingResult"
+        },
+        "documentInfo": {
+          "$ref": "#/definitions/v1DocumentInfo"
+        }
+      }
+    },
+    "v1UsageStatistics": {
+      "type": "object",
+      "properties": {
+        "totalSearches": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalDocumentsUploaded": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalDocumentsDeleted": {
+          "type": "string",
+          "format": "int64"
+        },
+        "searchesByType": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "int64"
+          }
+        },
+        "uploadsByFileType": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "int64"
+          }
+        },
+        "topQueries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TopQueriesStats"
+          }
+        }
+      }
+    },
+    "v1VectorIndexConfig": {
+      "type": "object",
+      "properties": {
+        "indexType": {
+          "type": "string",
+          "title": "\"hnsw\", \"ivf\", \"flat\""
+        },
+        "nlist": {
+          "type": "integer",
+          "format": "int32",
+          "title": "for IVF"
+        },
+        "m": {
+          "type": "integer",
+          "format": "int32",
+          "title": "for HNSW"
+        },
+        "efConstruction": {
+          "type": "integer",
+          "format": "int32",
+          "title": "for HNSW"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1VectorSearchConfig": {
+      "type": "object",
+      "properties": {
+        "similarityThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "similarityMetric": {
+          "type": "string"
+        },
+        "normalizeScores": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

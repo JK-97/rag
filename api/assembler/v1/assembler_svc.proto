@@ -1,0 +1,445 @@
+syntax = "proto3";
+
+package api.assembler.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "api/common/v1/common.proto";
+import "api/common/v1/errors.proto";
+import "validate/validate.proto";
+
+option go_package = "rag/api/assembler/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.assembler.v1";
+
+// Assembler服务 - 上下文构建和Token管理
+service Assembler {
+  // 构建上下文
+  rpc AssembleContext(AssembleContextRequest) returns (AssembleContextResponse) {
+    option (google.api.http) = {
+      post: "/v1/assemble/context"
+      body: "*"
+    };
+  }
+  
+  // 估算Token数量
+  rpc EstimateTokens(EstimateTokensRequest) returns (EstimateTokensResponse) {
+    option (google.api.http) = {
+      post: "/v1/tokens/estimate"
+      body: "*"
+    };
+  }
+  
+  // 内容优化
+  rpc OptimizeContent(OptimizeContentRequest) returns (OptimizeContentResponse) {
+    option (google.api.http) = {
+      post: "/v1/optimize/content"
+      body: "*"
+    };
+  }
+  
+  // 分割长文本
+  rpc SplitContent(SplitContentRequest) returns (SplitContentResponse) {
+    option (google.api.http) = {
+      post: "/v1/split/content"
+      body: "*"
+    };
+  }
+  
+  // 模板渲染
+  rpc RenderTemplate(RenderTemplateRequest) returns (RenderTemplateResponse) {
+    option (google.api.http) = {
+      post: "/v1/render/template"
+      body: "*"
+    };
+  }
+  
+  // 批量上下文构建
+  rpc AssembleBatchContexts(AssembleBatchContextsRequest) returns (AssembleBatchContextsResponse) {
+    option (google.api.http) = {
+      post: "/v1/assemble/batch"
+      body: "*"
+    };
+  }
+  
+  // 获取模板列表
+  rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse) {
+    option (google.api.http) = {
+      get: "/v1/templates"
+    };
+  }
+  
+  // 健康检查
+  rpc HealthCheck(google.protobuf.Empty) returns (api.common.v1.HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/v1/health"
+    };
+  }
+}
+
+// ========== 上下文构建相关消息 ==========
+
+message AssembleContextRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  repeated DocumentChunk chunks = 2 [(validate.rules).repeated.min_items = 1];
+  AssemblyOptions options = 3;
+  ContextTemplate template = 4;
+}
+
+message DocumentChunk {
+  string chunk_id = 1;
+  string document_id = 2;
+  string content = 3 [(validate.rules).string.min_len = 1];
+  string title = 4;
+  float relevance_score = 5;
+  int32 position_in_document = 6;
+  ChunkMetadata metadata = 7;
+}
+
+message ChunkMetadata {
+  string document_type = 1;
+  string author = 2;
+  google.protobuf.Timestamp created_at = 3;
+  string source_url = 4;
+  map<string, string> custom_metadata = 5;
+  int32 token_count = 6;
+}
+
+message AssemblyOptions {
+  int32 max_context_length = 1 [(validate.rules).int32 = {gte: 100, lte: 32000}];
+  string tokenizer_name = 2;
+  ContentSelectionStrategy selection_strategy = 3;
+  ContentArrangementStrategy arrangement_strategy = 4;
+  bool preserve_document_boundaries = 5;
+  bool include_source_citations = 6;
+  bool include_metadata = 7;
+  float diversity_threshold = 8 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  map<string, string> custom_options = 9;
+}
+
+message ContentSelectionStrategy {
+  string strategy_type = 1; // "top_k", "threshold", "diverse", "mmr", "hybrid"
+  int32 max_chunks = 2;
+  float score_threshold = 3;
+  float diversity_weight = 4; // for MMR and diverse selection
+  float redundancy_threshold = 5;
+  repeated string priority_document_types = 6;
+}
+
+message ContentArrangementStrategy {
+  string arrangement_type = 1; // "score_desc", "score_asc", "chronological", "logical", "document_grouped"
+  bool group_by_document = 2;
+  bool group_by_topic = 3;
+  bool maintain_context_flow = 4;
+  repeated SectionPriority section_priorities = 5;
+}
+
+message SectionPriority {
+  string section_type = 1; // "introduction", "main_content", "conclusion", "metadata"
+  int32 priority = 2;
+  float weight_boost = 3;
+}
+
+message ContextTemplate {
+  string template_name = 1;
+  string system_prompt = 2;
+  string user_prompt_template = 3;
+  repeated TemplateSection sections = 4;
+  map<string, string> variables = 5;
+}
+
+message TemplateSection {
+  string section_name = 1;
+  string section_template = 2;
+  bool is_required = 3;
+  int32 max_length = 4;
+  map<string, string> formatting_options = 5;
+}
+
+message AssembleContextResponse {
+  string assembled_context = 1;
+  ContextMetadata context_metadata = 2;
+  repeated UsedChunk used_chunks = 3;
+  repeated string warnings = 4;
+}
+
+message ContextMetadata {
+  int32 total_tokens = 1;
+  int32 chunks_used = 2;
+  int32 chunks_filtered = 3;
+  float avg_relevance_score = 4;
+  string tokenizer_used = 5;
+  AssemblyStatistics statistics = 6;
+  google.protobuf.Timestamp assembled_at = 7;
+}
+
+message AssemblyStatistics {
+  int64 assembly_time_ms = 1;
+  int32 duplicate_chunks_removed = 2;
+  int32 low_quality_chunks_filtered = 3;
+  float content_compression_ratio = 4;
+  map<string, int32> chunks_by_document_type = 5;
+}
+
+message UsedChunk {
+  string chunk_id = 1;
+  string document_id = 2;
+  int32 position_in_context = 3;
+  int32 token_count = 4;
+  float relevance_score = 5;
+  string usage_reason = 6; // "high_relevance", "diversity", "context_completion"
+}
+
+// ========== Token估算相关消息 ==========
+
+message TextList {
+  repeated string texts = 1;
+}
+
+message EstimateTokensRequest {
+  oneof content_source {
+    string text = 1;
+    TextList texts = 2;
+    AssembleContextRequest context_request = 3;
+  }
+  
+  string tokenizer_name = 4;
+  TokenEstimationOptions options = 5;
+}
+
+message TokenEstimationOptions {
+  bool include_special_tokens = 1;
+  bool include_detailed_breakdown = 2;
+  repeated string token_types_to_count = 3; // "regular", "special", "punctuation", "numbers"
+}
+
+message EstimateTokensResponse {
+  oneof result {
+    TokenCount single_count = 1;
+    BatchTokenCounts batch_counts = 2;
+    ContextTokenEstimation context_estimation = 3;
+  }
+  
+  TokenizationMetadata metadata = 4;
+}
+
+message TokenCount {
+  int32 total_tokens = 1;
+  TokenBreakdown breakdown = 2;
+}
+
+message BatchTokenCounts {
+  repeated TokenCount counts = 1;
+  int32 total_tokens_all = 2;
+  TokenStatistics statistics = 3;
+}
+
+message ContextTokenEstimation {
+  int32 estimated_total_tokens = 1;
+  int32 query_tokens = 2;
+  int32 content_tokens = 3;
+  int32 template_tokens = 4;
+  repeated ChunkTokenInfo chunk_token_info = 5;
+}
+
+message TokenBreakdown {
+  int32 regular_tokens = 1;
+  int32 special_tokens = 2;
+  int32 punctuation_tokens = 3;
+  int32 number_tokens = 4;
+  map<string, int32> custom_categories = 5;
+}
+
+message TokenStatistics {
+  int32 min_tokens = 1;
+  int32 max_tokens = 2;
+  float avg_tokens = 3;
+  float std_dev_tokens = 4;
+}
+
+message ChunkTokenInfo {
+  string chunk_id = 1;
+  int32 token_count = 2;
+  float estimated_context_contribution = 3;
+}
+
+message TokenizationMetadata {
+  string tokenizer_used = 1;
+  string tokenizer_version = 2;
+  int64 tokenization_time_ms = 3;
+  map<string, string> tokenizer_config = 4;
+}
+
+// ========== 内容优化相关消息 ==========
+
+message OptimizeContentRequest {
+  string content = 1 [(validate.rules).string.min_len = 1];
+  OptimizationOptions options = 2;
+  int32 target_length = 3 [(validate.rules).int32.gte = 1];
+}
+
+message OptimizationOptions {
+  string optimization_goal = 1; // "length", "clarity", "coherence", "relevance"
+  string optimization_method = 2; // "summarization", "extraction", "compression", "paraphrasing"
+  float aggressiveness = 3 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  bool preserve_key_information = 4;
+  bool preserve_structure = 5;
+  repeated string preserve_phrases = 6;
+  repeated string remove_patterns = 7;
+}
+
+message OptimizeContentResponse {
+  string optimized_content = 1;
+  OptimizationResult optimization_result = 2;
+  repeated OptimizationStep steps_taken = 3;
+}
+
+message OptimizationResult {
+  int32 original_length = 1;
+  int32 optimized_length = 2;
+  float compression_ratio = 3;
+  float quality_score = 4;
+  int32 information_preserved_percentage = 5;
+  map<string, string> metrics = 6;
+}
+
+message OptimizationStep {
+  string step_name = 1;
+  string method_used = 2;
+  int32 content_length_before = 3;
+  int32 content_length_after = 4;
+  string description = 5;
+}
+
+// ========== 内容分割相关消息 ==========
+
+message SplitContentRequest {
+  string content = 1 [(validate.rules).string.min_len = 1];
+  SplitOptions options = 2;
+}
+
+message SplitOptions {
+  int32 max_chunk_size = 1 [(validate.rules).int32 = {gte: 100, lte: 8192}];
+  int32 chunk_overlap = 2 [(validate.rules).int32 = {gte: 0, lte: 1000}];
+  string split_strategy = 3; // "sentence", "paragraph", "semantic", "fixed_length"
+  string tokenizer_name = 4;
+  bool preserve_boundaries = 5;
+  repeated string boundary_markers = 6; // custom markers for splitting
+}
+
+message SplitContentResponse {
+  repeated ContentChunk chunks = 1;
+  SplitMetadata metadata = 2;
+}
+
+message ContentChunk {
+  int32 chunk_index = 1;
+  string content = 2;
+  int32 start_position = 3;
+  int32 end_position = 4;
+  int32 token_count = 5;
+  map<string, string> chunk_metadata = 6;
+}
+
+message SplitMetadata {
+  int32 total_chunks = 1;
+  int32 original_length = 2;
+  float avg_chunk_size = 3;
+  string split_strategy_used = 4;
+  int64 split_time_ms = 5;
+}
+
+// ========== 模板渲染相关消息 ==========
+
+message RenderTemplateRequest {
+  string template_name = 1 [(validate.rules).string.min_len = 1];
+  map<string, string> variables = 2;
+  RenderOptions options = 3;
+}
+
+message RenderOptions {
+  bool strict_mode = 1; // fail if variables missing
+  map<string, string> default_values = 2;
+  bool escape_html = 3;
+  string output_format = 4; // "text", "markdown", "html"
+}
+
+message RenderTemplateResponse {
+  string rendered_content = 1;
+  TemplateRenderingMetadata metadata = 2;
+  repeated string used_variables = 3;
+  repeated string missing_variables = 4;
+}
+
+message TemplateRenderingMetadata {
+  string template_used = 1;
+  int32 variables_substituted = 2;
+  int32 output_length = 3;
+  int64 rendering_time_ms = 4;
+}
+
+// ========== 批量上下文构建相关消息 ==========
+
+message AssembleBatchContextsRequest {
+  repeated BatchContextRequest requests = 1 [(validate.rules).repeated.min_items = 1];
+  string batch_id = 2;
+}
+
+message BatchContextRequest {
+  string request_id = 1;
+  AssembleContextRequest context_request = 2;
+}
+
+message AssembleBatchContextsResponse {
+  string batch_id = 1;
+  repeated BatchContextResult results = 2;
+  BatchAssemblyMetadata metadata = 3;
+}
+
+message BatchContextResult {
+  string request_id = 1;
+  AssembleContextResponse context_response = 2;
+  api.common.v1.ProcessingStatus status = 3;
+  string error_message = 4;
+}
+
+message BatchAssemblyMetadata {
+  int32 total_requests = 1;
+  int32 successful_assemblies = 2;
+  int32 failed_assemblies = 3;
+  int64 total_processing_time_ms = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp completed_at = 6;
+}
+
+// ========== 模板管理相关消息 ==========
+
+message ListTemplatesRequest {
+  api.common.v1.PaginationRequest pagination = 1;
+  repeated api.common.v1.Filter filters = 2;
+}
+
+message ListTemplatesResponse {
+  repeated TemplateInfo templates = 1;
+  api.common.v1.PaginationResponse pagination = 2;
+}
+
+message TemplateInfo {
+  string name = 1;
+  string display_name = 2;
+  string description = 3;
+  string category = 4;
+  repeated string supported_variables = 5;
+  repeated string required_variables = 6;
+  TemplateStatistics usage_statistics = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message TemplateStatistics {
+  int32 usage_count = 1;
+  float avg_rendering_time_ms = 2;
+  google.protobuf.Timestamp last_used = 3;
+  map<string, int32> variable_usage_frequency = 4;
+}

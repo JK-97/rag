@@ -1,0 +1,933 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/embedding_svc.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Embedding"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/embed/batch": {
+      "post": {
+        "summary": "批量向量化",
+        "operationId": "Embedding_EmbedBatch",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EmbedBatchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EmbedBatchRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Embedding"
+        ]
+      }
+    },
+    "/v1/embed/batch-async": {
+      "post": {
+        "summary": "异步批量向量化",
+        "operationId": "Embedding_EmbedBatchAsync",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EmbedBatchAsyncResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EmbedBatchAsyncRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Embedding"
+        ]
+      }
+    },
+    "/v1/embed/tasks/{taskId}": {
+      "get": {
+        "summary": "获取异步任务状态",
+        "operationId": "Embedding_GetEmbeddingTaskStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetEmbeddingTaskStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Embedding"
+        ]
+      }
+    },
+    "/v1/embed/text": {
+      "post": {
+        "summary": "文本向量化",
+        "operationId": "Embedding_EmbedText",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EmbedTextResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EmbedTextRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Embedding"
+        ]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "summary": "健康检查",
+        "operationId": "Embedding_HealthCheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Embedding"
+        ]
+      }
+    },
+    "/v1/models": {
+      "get": {
+        "summary": "列出可用模型",
+        "operationId": "Embedding_ListModels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListModelsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.sortBy",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.sortDesc",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Embedding"
+        ]
+      }
+    },
+    "/v1/models/{modelName}": {
+      "get": {
+        "summary": "获取模型信息",
+        "operationId": "Embedding_GetModelInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetModelInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Embedding"
+        ]
+      }
+    },
+    "/v1/similarity": {
+      "post": {
+        "summary": "计算相似度",
+        "operationId": "Embedding_ComputeSimilarity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ComputeSimilarityResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ComputeSimilarityRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Embedding"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1BatchEmbeddingMetadata": {
+      "type": "object",
+      "properties": {
+        "totalTexts": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "successfulEmbeddings": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "failedEmbeddings": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalProcessingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "modelUsed": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ComputeSimilarityRequest": {
+      "type": "object",
+      "properties": {
+        "textA": {
+          "type": "string"
+        },
+        "embeddingA": {
+          "$ref": "#/definitions/v1EmbeddingVector"
+        },
+        "textB": {
+          "type": "string"
+        },
+        "embeddingB": {
+          "$ref": "#/definitions/v1EmbeddingVector"
+        },
+        "similarityMetric": {
+          "type": "string",
+          "title": "\"cosine\", \"dot_product\", \"euclidean\", \"manhattan\""
+        },
+        "modelName": {
+          "type": "string",
+          "title": "required if using text inputs"
+        },
+        "options": {
+          "$ref": "#/definitions/v1EmbeddingOptions"
+        }
+      }
+    },
+    "v1ComputeSimilarityResponse": {
+      "type": "object",
+      "properties": {
+        "similarityScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "metricUsed": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1SimilarityMetadata"
+        }
+      }
+    },
+    "v1EmbedBatchAsyncRequest": {
+      "type": "object",
+      "properties": {
+        "texts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "modelName": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1EmbeddingOptions"
+        },
+        "callbackUrl": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1EmbedBatchAsyncResponse": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "estimatedProcessingTimeSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1EmbedBatchRequest": {
+      "type": "object",
+      "properties": {
+        "texts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "modelName": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1EmbeddingOptions"
+        },
+        "batchId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1EmbedBatchResponse": {
+      "type": "object",
+      "properties": {
+        "batchId": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1EmbeddingResult"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1BatchEmbeddingMetadata"
+        }
+      }
+    },
+    "v1EmbedTextRequest": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "modelName": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1EmbeddingOptions"
+        }
+      }
+    },
+    "v1EmbedTextResponse": {
+      "type": "object",
+      "properties": {
+        "embedding": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "dimension": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "modelUsed": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1EmbeddingMetadata"
+        }
+      }
+    },
+    "v1EmbeddingMetadata": {
+      "type": "object",
+      "properties": {
+        "tokenCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "processingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "wasTruncated": {
+          "type": "boolean"
+        },
+        "encodingFormat": {
+          "type": "string",
+          "title": "\"float32\", \"int8\", \"binary\""
+        },
+        "modelMetadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1EmbeddingOptions": {
+      "type": "object",
+      "properties": {
+        "normalize": {
+          "type": "boolean"
+        },
+        "poolingStrategy": {
+          "type": "string",
+          "title": "\"mean\", \"max\", \"cls\", \"last_token\""
+        },
+        "maxLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "truncate": {
+          "type": "boolean"
+        },
+        "instruction": {
+          "type": "string",
+          "title": "for instruction-based models"
+        },
+        "modelParameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1EmbeddingResult": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "embedding": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "embeddingMetadata": {
+          "$ref": "#/definitions/v1EmbeddingMetadata"
+        }
+      }
+    },
+    "v1EmbeddingVector": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    },
+    "v1Filter": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "过滤条件"
+    },
+    "v1GetEmbeddingTaskStatusResponse": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "taskStatus": {
+          "$ref": "#/definitions/v1TaskStatus"
+        },
+        "result": {
+          "$ref": "#/definitions/v1EmbedBatchResponse",
+          "title": "only populated if completed"
+        }
+      }
+    },
+    "v1GetModelInfoResponse": {
+      "type": "object",
+      "properties": {
+        "modelInfo": {
+          "$ref": "#/definitions/v1ModelInfo"
+        }
+      }
+    },
+    "v1HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"SERVING\", \"NOT_SERVING\", \"SERVICE_UNKNOWN\""
+        },
+        "service": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "健康检查响应"
+    },
+    "v1ListModelsResponse": {
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ModelInfo"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ModelCapabilities": {
+      "type": "object",
+      "properties": {
+        "supportsInstruction": {
+          "type": "boolean"
+        },
+        "supportsMultipleLanguages": {
+          "type": "boolean"
+        },
+        "supportsDomainAdaptation": {
+          "type": "boolean"
+        },
+        "poolingStrategies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "encodingFormats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supportsBatchProcessing": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1ModelConfiguration": {
+      "type": "object",
+      "properties": {
+        "modelType": {
+          "type": "string",
+          "title": "\"transformer\", \"sentence_transformer\", \"custom\""
+        },
+        "architecture": {
+          "type": "string",
+          "description": "\"bert\", \"roberta\", \"sentence-bert\", etc."
+        },
+        "defaultParameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "requiredParameters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optionalParameters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ModelInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxSequenceLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "supportedLanguages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "capabilities": {
+          "$ref": "#/definitions/v1ModelCapabilities"
+        },
+        "performance": {
+          "$ref": "#/definitions/v1ModelPerformance"
+        },
+        "configuration": {
+          "$ref": "#/definitions/v1ModelConfiguration"
+        },
+        "isAvailable": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ModelPerformance": {
+      "type": "object",
+      "properties": {
+        "avgProcessingTimeMs": {
+          "type": "number",
+          "format": "float"
+        },
+        "maxThroughputPerSecond": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "memoryUsageMb": {
+          "type": "string",
+          "format": "int64"
+        },
+        "benchmarkScores": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    },
+    "v1PaginationRequest": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "sortBy": {
+          "type": "string"
+        },
+        "sortDesc": {
+          "type": "boolean"
+        }
+      },
+      "title": "分页请求参数"
+    },
+    "v1PaginationResponse": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "total": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalPages": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "分页响应信息"
+    },
+    "v1ProcessingStatus": {
+      "type": "string",
+      "enum": [
+        "PROCESSING_STATUS_UNSPECIFIED",
+        "PROCESSING_STATUS_PENDING",
+        "PROCESSING_STATUS_PROCESSING",
+        "PROCESSING_STATUS_COMPLETED",
+        "PROCESSING_STATUS_FAILED",
+        "PROCESSING_STATUS_CANCELLED"
+      ],
+      "default": "PROCESSING_STATUS_UNSPECIFIED",
+      "title": "处理状态"
+    },
+    "v1SimilarityMetadata": {
+      "type": "object",
+      "properties": {
+        "dimension": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "embeddingsNormalized": {
+          "type": "boolean"
+        },
+        "computationTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "debugInfo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1TaskStatus": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "progress": {
+          "type": "number",
+          "format": "float"
+        },
+        "message": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "任务状态信息"
+    }
+  }
+}

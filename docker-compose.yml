@@ -1,0 +1,282 @@
+version: '3.8'
+
+services:
+  # Gateway服务 - 统一入口
+  gateway:
+    build:
+      context: .
+      dockerfile: app/gateway/Dockerfile
+    ports:
+      - "8080:8080"
+      - "9000:9000"
+    environment:
+      - SERVICE_NAME=gateway
+      - HTTP_PORT=8080
+      - GRPC_PORT=9000
+    depends_on:
+      - orchestrator
+      - docstore
+    networks:
+      - rag-network
+    volumes:
+      - ./app/gateway/configs:/data/conf
+
+  # Orchestrator服务 - 工作流编排
+  orchestrator:
+    build:
+      context: .
+      dockerfile: app/orchestrator/Dockerfile
+    ports:
+      - "8081:8080"
+      - "9001:9000"
+    environment:
+      - SERVICE_NAME=orchestrator
+      - HTTP_PORT=8080
+      - GRPC_PORT=9000
+    depends_on:
+      - preprocessor
+      - embedding
+      - docstore
+      - reranker
+      - assembler
+    networks:
+      - rag-network
+    volumes:
+      - ./app/orchestrator/configs:/data/conf
+
+  # Preprocessor服务 - 查询预处理
+  preprocessor:
+    build:
+      context: .
+      dockerfile: app/preprocessor/Dockerfile
+    ports:
+      - "8082:8080"
+      - "9002:9000"
+    environment:
+      - SERVICE_NAME=preprocessor
+      - HTTP_PORT=8080
+      - GRPC_PORT=9000
+    networks:
+      - rag-network
+    volumes:
+      - ./app/preprocessor/configs:/data/conf
+
+  # Embedding服务 - 文本向量化
+  embedding:
+    build:
+      context: .
+      dockerfile: app/embedding/Dockerfile
+    ports:
+      - "8083:8080"
+      - "9003:9000"
+    environment:
+      - SERVICE_NAME=embedding
+      - HTTP_PORT=8080
+      - GRPC_PORT=9000
+    networks:
+      - rag-network
+    volumes:
+      - ./app/embedding/configs:/data/conf
+      - ./models:/data/models  # 挂载模型文件
+
+  # DocStore服务 - 文档存储和检索
+  docstore:
+    build:
+      context: .
+      dockerfile: app/docstore/Dockerfile
+    ports:
+      - "8084:8080"
+      - "9004:9000"
+    environment:
+      - SERVICE_NAME=docstore
+      - HTTP_PORT=8080
+      - GRPC_PORT=9000
+    depends_on:
+      - postgres
+      - milvus-standalone
+    networks:
+      - rag-network
+    volumes:
+      - ./app/docstore/configs:/data/conf
+      - ./data/documents:/data/documents
+
+  # Reranker服务 - 文档重排序
+  reranker:
+    build:
+      context: .
+      dockerfile: app/reranker/Dockerfile
+    ports:
+      - "8085:8080"
+      - "9005:9000"
+    environment:
+      - SERVICE_NAME=reranker
+      - HTTP_PORT=8080
+      - GRPC_PORT=9000
+    networks:
+      - rag-network
+    volumes:
+      - ./app/reranker/configs:/data/conf
+
+  # Assembler服务 - 上下文构建
+  assembler:
+    build:
+      context: .
+      dockerfile: app/assembler/Dockerfile
+    ports:
+      - "8086:8080"
+      - "9006:9000"
+    environment:
+      - SERVICE_NAME=assembler
+      - HTTP_PORT=8080
+      - GRPC_PORT=9000
+    networks:
+      - rag-network
+    volumes:
+      - ./app/assembler/configs:/data/conf
+
+  # PostgreSQL - 元数据存储
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: rag_db
+      POSTGRES_USER: rag_user
+      POSTGRES_PASSWORD: rag_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - rag-network
+
+  # Milvus向量数据库
+  etcd:
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - milvus_etcd:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - rag-network
+
+  minio:
+    container_name: milvus-minio
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      - milvus_minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - rag-network
+
+  milvus-standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.3.3
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+    - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - milvus_data:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - "etcd"
+      - "minio"
+    networks:
+      - rag-network
+
+  # Redis - 缓存
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - rag-network
+
+  # Prometheus - 监控
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - rag-network
+
+  # Grafana - 可视化
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - rag-network
+
+  # Jaeger - 链路追踪
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  milvus_data:
+  milvus_etcd:
+  milvus_minio:
+  redis_data:
+  prometheus_data:
+  grafana_data:

@@ -1,0 +1,276 @@
+syntax = "proto3";
+
+package api.gateway.v1;
+
+import "google/api/annotations.proto";
+import "google/api/httpbody.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "api/common/v1/common.proto";
+import "api/common/v1/errors.proto";
+import "validate/validate.proto";
+
+option go_package = "rag/api/gateway/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.gateway.v1";
+
+// Gateway服务 - 统一入口、认证、路由和文档管理
+service Gateway {
+  // 用户认证
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/login"
+      body: "*"
+    };
+  }
+  
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/refresh"
+      body: "*"
+    };
+  }
+  
+  // 智能问答查询
+  rpc Query(QueryRequest) returns (QueryResponse) {
+    option (google.api.http) = {
+      post: "/v1/query"
+      body: "*"
+    };
+  }
+  
+  // 文档管理
+  rpc UploadDocument(UploadDocumentRequest) returns (UploadDocumentResponse) {
+    option (google.api.http) = {
+      post: "/v1/documents"
+      body: "*"
+    };
+  }
+  
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse) {
+    option (google.api.http) = {
+      get: "/v1/documents/{document_id}"
+    };
+  }
+  
+  rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse) {
+    option (google.api.http) = {
+      delete: "/v1/documents/{document_id}"
+    };
+  }
+  
+  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse) {
+    option (google.api.http) = {
+      get: "/v1/documents"
+    };
+  }
+  
+  rpc UpdateDocumentMetadata(UpdateDocumentMetadataRequest) returns (UpdateDocumentMetadataResponse) {
+    option (google.api.http) = {
+      put: "/v1/documents/{document_id}/metadata"
+      body: "*"
+    };
+  }
+  
+  // 健康检查
+  rpc HealthCheck(google.protobuf.Empty) returns (api.common.v1.HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/v1/health"
+    };
+  }
+}
+
+// ========== 认证相关消息 ==========
+
+message LoginRequest {
+  string username = 1 [(validate.rules).string.min_len = 1];
+  string password = 2 [(validate.rules).string.min_len = 1];
+  string client_id = 3;
+  string client_secret = 4;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  string token_type = 3; // "Bearer"
+  int64 expires_in = 4; // seconds
+  string scope = 5;
+  UserInfo user_info = 6;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1 [(validate.rules).string.min_len = 1];
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  string token_type = 3;
+  int64 expires_in = 4;
+}
+
+message UserInfo {
+  string user_id = 1;
+  string username = 2;
+  string email = 3;
+  repeated string roles = 4;
+  map<string, string> attributes = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp last_login_at = 7;
+}
+
+// ========== 查询相关消息 ==========
+
+message QueryRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  string session_id = 2;
+  QueryParameters parameters = 3;
+  string user_id = 4;
+}
+
+message QueryParameters {
+  int32 max_results = 1 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  float similarity_threshold = 2 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  repeated string document_ids = 3;
+  repeated string document_types = 4;
+  map<string, string> filters = 5;
+  bool enable_reranking = 6;
+  bool enable_context_assembly = 7;
+  int32 max_context_length = 8;
+}
+
+message QueryResponse {
+  string query_id = 1;
+  string answer = 2;
+  repeated RelatedDocument related_documents = 3;
+  QueryMetadata metadata = 4;
+  repeated string suggestions = 5;
+}
+
+message RelatedDocument {
+  string document_id = 1;
+  string title = 2;
+  string snippet = 3;
+  float relevance_score = 4;
+  string document_type = 5;
+  repeated api.common.v1.ChunkInfo chunks = 6;
+}
+
+message QueryMetadata {
+  google.protobuf.Timestamp query_time = 1;
+  int64 processing_time_ms = 2;
+  int32 total_documents_searched = 3;
+  int32 documents_returned = 4;
+  string model_used = 5;
+  map<string, string> debug_info = 6;
+}
+
+// ========== 文档管理消息 ==========
+
+message UploadDocumentRequest {
+  bytes file_content = 1 [(validate.rules).bytes.min_len = 1];
+  string title = 2 [(validate.rules).string.min_len = 1];
+  string file_type = 3 [(validate.rules).string.min_len = 1];
+  api.common.v1.Metadata metadata = 4;
+  DocumentProcessingOptions processing_options = 5;
+}
+
+message DocumentProcessingOptions {
+  string chunk_strategy = 1; // "paragraph", "fixed_length", "sentence", "semantic"
+  int32 chunk_size = 2 [(validate.rules).int32 = {gte: 100, lte: 2000}];
+  int32 chunk_overlap = 3 [(validate.rules).int32 = {gte: 0, lte: 500}];
+  string embedding_model = 4;
+  bool enable_ocr = 5;
+  string language = 6;
+}
+
+message UploadDocumentResponse {
+  string document_id = 1;
+  string upload_status = 2; // "uploaded", "processing", "completed", "failed"
+  DocumentProcessingProgress progress = 3;
+  api.common.v1.DocumentInfo document_info = 4;
+}
+
+message DocumentProcessingProgress {
+  float progress_percentage = 1;
+  string current_stage = 2; // "parsing", "chunking", "embedding", "indexing"
+  string status_message = 3;
+  google.protobuf.Timestamp started_at = 4;
+  google.protobuf.Timestamp estimated_completion = 5;
+}
+
+message GetDocumentRequest {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  repeated string include_fields = 2; // "content", "chunks", "metadata", "stats"
+}
+
+message GetDocumentResponse {
+  api.common.v1.DocumentInfo document_info = 1;
+  string content = 2;
+  repeated api.common.v1.ChunkInfo chunks = 3;
+  DocumentStats stats = 4;
+}
+
+message DocumentStats {
+  int32 total_chunks = 1;
+  int32 total_tokens = 2;
+  int32 average_chunk_size = 3;
+  int32 query_count = 4;
+  google.protobuf.Timestamp last_accessed = 5;
+}
+
+message DeleteDocumentRequest {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  DeleteOptions options = 2;
+}
+
+message DeleteOptions {
+  bool force_delete = 1;
+  bool delete_related_chunks = 2;
+  bool delete_embeddings = 3;
+  string reason = 4;
+}
+
+message DeleteDocumentResponse {
+  string status = 1; // "deleted", "scheduled_for_deletion", "failed"
+  CleanupInfo cleanup_info = 2;
+}
+
+message CleanupInfo {
+  int32 chunks_deleted = 1;
+  int32 embeddings_deleted = 2;
+  int64 storage_freed_bytes = 3;
+  google.protobuf.Timestamp deletion_completed_at = 4;
+}
+
+message ListDocumentsRequest {
+  api.common.v1.PaginationRequest pagination = 1;
+  repeated api.common.v1.Filter filters = 2;
+  repeated api.common.v1.Sort sorts = 3;
+  repeated string include_fields = 4;
+}
+
+message ListDocumentsResponse {
+  repeated api.common.v1.DocumentInfo documents = 1;
+  api.common.v1.PaginationResponse pagination = 2;
+  DocumentListStats stats = 3;
+}
+
+message DocumentListStats {
+  int64 total_documents = 1;
+  int64 total_size_bytes = 2;
+  int32 total_chunks = 3;
+  map<string, int32> documents_by_type = 4;
+}
+
+message UpdateDocumentMetadataRequest {
+  string document_id = 1 [(validate.rules).string.min_len = 1];
+  api.common.v1.Metadata metadata = 2;
+  repeated string update_fields = 3; // specify which fields to update
+}
+
+message UpdateDocumentMetadataResponse {
+  string status = 1; // "updated", "partial_update", "failed"
+  api.common.v1.Metadata updated_metadata = 2;
+  int32 metadata_version = 3;
+}

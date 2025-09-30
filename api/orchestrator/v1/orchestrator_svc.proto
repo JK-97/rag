@@ -1,0 +1,443 @@
+syntax = "proto3";
+
+package api.orchestrator.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "api/common/v1/common.proto";
+import "api/common/v1/errors.proto";
+import "validate/validate.proto";
+
+option go_package = "rag/api/orchestrator/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.orchestrator.v1";
+
+// Orchestrator服务 - 工作流编排和服务协调
+service Orchestrator {
+  // 处理查询请求
+  rpc ProcessQuery(ProcessQueryRequest) returns (ProcessQueryResponse) {
+    option (google.api.http) = {
+      post: "/v1/process/query"
+      body: "*"
+    };
+  }
+  
+  // 执行工作流
+  rpc ExecuteWorkflow(ExecuteWorkflowRequest) returns (ExecuteWorkflowResponse) {
+    option (google.api.http) = {
+      post: "/v1/workflows/execute"
+      body: "*"
+    };
+  }
+  
+  // 异步执行工作流
+  rpc ExecuteWorkflowAsync(ExecuteWorkflowAsyncRequest) returns (ExecuteWorkflowAsyncResponse) {
+    option (google.api.http) = {
+      post: "/v1/workflows/execute-async"
+      body: "*"
+    };
+  }
+  
+  // 获取工作流状态
+  rpc GetWorkflowStatus(GetWorkflowStatusRequest) returns (GetWorkflowStatusResponse) {
+    option (google.api.http) = {
+      get: "/v1/workflows/{workflow_id}/status"
+    };
+  }
+  
+  // 取消工作流
+  rpc CancelWorkflow(CancelWorkflowRequest) returns (CancelWorkflowResponse) {
+    option (google.api.http) = {
+      post: "/v1/workflows/{workflow_id}/cancel"
+      body: "*"
+    };
+  }
+  
+  // 创建工作流定义
+  rpc CreateWorkflowDefinition(CreateWorkflowDefinitionRequest) returns (CreateWorkflowDefinitionResponse) {
+    option (google.api.http) = {
+      post: "/v1/workflows/definitions"
+      body: "*"
+    };
+  }
+  
+  // 获取工作流定义
+  rpc GetWorkflowDefinition(GetWorkflowDefinitionRequest) returns (GetWorkflowDefinitionResponse) {
+    option (google.api.http) = {
+      get: "/v1/workflows/definitions/{definition_id}"
+    };
+  }
+  
+  // 列出工作流定义
+  rpc ListWorkflowDefinitions(ListWorkflowDefinitionsRequest) returns (ListWorkflowDefinitionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/workflows/definitions"
+    };
+  }
+  
+  // 更新工作流定义
+  rpc UpdateWorkflowDefinition(UpdateWorkflowDefinitionRequest) returns (UpdateWorkflowDefinitionResponse) {
+    option (google.api.http) = {
+      put: "/v1/workflows/definitions/{definition_id}"
+      body: "*"
+    };
+  }
+  
+  // 获取服务健康状态
+  rpc GetServicesHealth(GetServicesHealthRequest) returns (GetServicesHealthResponse) {
+    option (google.api.http) = {
+      get: "/v1/services/health"
+    };
+  }
+  
+  // 健康检查
+  rpc HealthCheck(google.protobuf.Empty) returns (api.common.v1.HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/v1/health"
+    };
+  }
+}
+
+// ========== 查询处理相关消息 ==========
+
+message ProcessQueryRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  string session_id = 2;
+  string user_id = 3;
+  QueryProcessingOptions options = 4;
+  map<string, string> context = 5;
+}
+
+message QueryProcessingOptions {
+  string workflow_id = 1; // use predefined workflow
+  WorkflowDefinition custom_workflow = 2; // or define custom workflow
+  bool enable_caching = 3;
+  int32 timeout_seconds = 4 [(validate.rules).int32 = {gte: 1, lte: 300}];
+  bool enable_fallback = 5;
+  map<string, google.protobuf.Any> service_options = 6;
+}
+
+message ProcessQueryResponse {
+  string query_id = 1;
+  string final_answer = 2;
+  repeated ContextDocument context_documents = 3;
+  QueryProcessingMetadata metadata = 4;
+  WorkflowExecutionTrace execution_trace = 5;
+}
+
+message ContextDocument {
+  string document_id = 1;
+  string chunk_id = 2;
+  string title = 3;
+  string content = 4;
+  float relevance_score = 5;
+  string source = 6;
+  map<string, string> metadata = 7;
+}
+
+message QueryProcessingMetadata {
+  int64 total_processing_time_ms = 1;
+  map<string, int64> service_processing_times = 2;
+  string workflow_used = 3;
+  int32 total_documents_searched = 4;
+  int32 documents_returned = 5;
+  repeated string services_called = 6;
+  map<string, string> debug_info = 7;
+  google.protobuf.Timestamp started_at = 8;
+  google.protobuf.Timestamp completed_at = 9;
+}
+
+// ========== 工作流执行相关消息 ==========
+
+message ExecuteWorkflowRequest {
+  string workflow_definition_id = 1;
+  map<string, google.protobuf.Any> input_parameters = 2;
+  ExecutionOptions options = 3;
+  string execution_id = 4; // optional, for idempotency
+}
+
+message ExecutionOptions {
+  int32 timeout_seconds = 1;
+  bool enable_retry = 2;
+  int32 max_retries = 3;
+  bool enable_fallback = 4;
+  bool enable_circuit_breaker = 5;
+  map<string, string> execution_context = 6;
+}
+
+message ExecuteWorkflowResponse {
+  string execution_id = 1;
+  api.common.v1.ProcessingStatus status = 2;
+  map<string, google.protobuf.Any> output_results = 3;
+  WorkflowExecutionMetadata metadata = 4;
+  WorkflowExecutionTrace execution_trace = 5;
+}
+
+message ExecuteWorkflowAsyncRequest {
+  string workflow_definition_id = 1;
+  map<string, google.protobuf.Any> input_parameters = 2;
+  ExecutionOptions options = 3;
+  string callback_url = 4;
+  int32 priority = 5 [(validate.rules).int32 = {gte: 1, lte: 10}];
+}
+
+message ExecuteWorkflowAsyncResponse {
+  string execution_id = 1;
+  api.common.v1.ProcessingStatus status = 2;
+  int32 estimated_completion_seconds = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message GetWorkflowStatusRequest {
+  string workflow_id = 1 [(validate.rules).string.min_len = 1];
+  bool include_trace = 2;
+  bool include_logs = 3;
+}
+
+message GetWorkflowStatusResponse {
+  string workflow_id = 1;
+  api.common.v1.ProcessingStatus status = 2;
+  WorkflowExecutionMetadata metadata = 3;
+  WorkflowExecutionTrace execution_trace = 4;
+  repeated WorkflowLog logs = 5;
+}
+
+message CancelWorkflowRequest {
+  string workflow_id = 1 [(validate.rules).string.min_len = 1];
+  string reason = 2;
+  bool force_cancel = 3;
+}
+
+message CancelWorkflowResponse {
+  string workflow_id = 1;
+  api.common.v1.ProcessingStatus status = 2;
+  string cancellation_reason = 3;
+  google.protobuf.Timestamp cancelled_at = 4;
+}
+
+// ========== 工作流定义相关消息 ==========
+
+message CreateWorkflowDefinitionRequest {
+  WorkflowDefinition definition = 1;
+  bool make_default = 2;
+}
+
+message CreateWorkflowDefinitionResponse {
+  string definition_id = 1;
+  WorkflowDefinition created_definition = 2;
+  string version = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message GetWorkflowDefinitionRequest {
+  string definition_id = 1 [(validate.rules).string.min_len = 1];
+  string version = 2; // specific version, or latest if empty
+}
+
+message GetWorkflowDefinitionResponse {
+  WorkflowDefinition definition = 1;
+  WorkflowDefinitionMetadata metadata = 2;
+}
+
+message ListWorkflowDefinitionsRequest {
+  api.common.v1.PaginationRequest pagination = 1;
+  repeated api.common.v1.Filter filters = 2;
+  bool include_metadata = 3;
+}
+
+message ListWorkflowDefinitionsResponse {
+  repeated WorkflowDefinitionInfo definitions = 1;
+  api.common.v1.PaginationResponse pagination = 2;
+}
+
+message UpdateWorkflowDefinitionRequest {
+  string definition_id = 1 [(validate.rules).string.min_len = 1];
+  WorkflowDefinition definition = 2;
+  bool create_new_version = 3;
+}
+
+message UpdateWorkflowDefinitionResponse {
+  string definition_id = 1;
+  WorkflowDefinition updated_definition = 2;
+  string version = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// ========== 工作流定义结构 ==========
+
+message WorkflowDefinition {
+  string name = 1 [(validate.rules).string.min_len = 1];
+  string description = 2;
+  string version = 3;
+  repeated WorkflowStep steps = 4;
+  WorkflowConfiguration configuration = 5;
+  map<string, google.protobuf.Any> default_parameters = 6;
+}
+
+message WorkflowStep {
+  string step_id = 1 [(validate.rules).string.min_len = 1];
+  string step_name = 2;
+  string service_name = 3; // "preprocessor", "embedding", "docstore", etc.
+  string method_name = 4; // service method to call
+  map<string, google.protobuf.Any> input_mapping = 5; // how to map inputs
+  map<string, string> output_mapping = 6; // how to map outputs
+  StepConfiguration step_config = 7;
+  repeated string depends_on = 8; // step dependencies
+  ConditionalExecution conditional = 9;
+}
+
+message StepConfiguration {
+  int32 timeout_seconds = 1;
+  int32 retry_attempts = 2;
+  string retry_strategy = 3; // "fixed", "exponential", "linear"
+  bool enable_fallback = 4;
+  FallbackConfiguration fallback_config = 5;
+  bool run_in_parallel = 6;
+  map<string, string> custom_config = 7;
+}
+
+message ConditionalExecution {
+  string condition = 1; // expression to evaluate
+  repeated string execute_if_true = 2; // step IDs to execute if true
+  repeated string execute_if_false = 3; // step IDs to execute if false
+  string condition_type = 4; // "javascript", "simple", "jsonpath"
+}
+
+message FallbackConfiguration {
+  string fallback_type = 1; // "default_value", "skip", "alternative_step"
+  google.protobuf.Any fallback_value = 2;
+  string alternative_step_id = 3;
+}
+
+message WorkflowConfiguration {
+  int32 global_timeout_seconds = 1;
+  bool enable_parallel_execution = 2;
+  string execution_strategy = 3; // "sequential", "parallel", "dag"
+  ErrorHandlingStrategy error_handling = 4;
+  map<string, string> global_settings = 5;
+}
+
+message ErrorHandlingStrategy {
+  string strategy = 1; // "fail_fast", "continue_on_error", "retry_all"
+  int32 max_global_retries = 2;
+  bool enable_rollback = 3;
+  repeated string critical_steps = 4; // steps that must succeed
+}
+
+// ========== 工作流执行跟踪 ==========
+
+message WorkflowExecutionTrace {
+  string execution_id = 1;
+  repeated StepExecutionTrace step_traces = 2;
+  WorkflowExecutionSummary summary = 3;
+}
+
+message StepExecutionTrace {
+  string step_id = 1;
+  string step_name = 2;
+  api.common.v1.ProcessingStatus status = 3;
+  google.protobuf.Timestamp started_at = 4;
+  google.protobuf.Timestamp completed_at = 5;
+  int64 duration_ms = 6;
+  map<string, google.protobuf.Any> input_data = 7;
+  map<string, google.protobuf.Any> output_data = 8;
+  string error_message = 9;
+  int32 retry_count = 10;
+  repeated StepExecutionEvent events = 11;
+}
+
+message StepExecutionEvent {
+  string event_type = 1; // "started", "retry", "fallback", "completed", "failed"
+  string event_message = 2;
+  google.protobuf.Timestamp event_time = 3;
+  map<string, string> event_metadata = 4;
+}
+
+message WorkflowExecutionSummary {
+  api.common.v1.ProcessingStatus overall_status = 1;
+  int32 total_steps = 2;
+  int32 successful_steps = 3;
+  int32 failed_steps = 4;
+  int32 skipped_steps = 5;
+  int64 total_execution_time_ms = 6;
+  string failure_reason = 7;
+}
+
+message WorkflowExecutionMetadata {
+  string workflow_definition_id = 1;
+  string workflow_version = 2;
+  string executor_id = 3;
+  map<string, string> execution_context = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+}
+
+message WorkflowLog {
+  string log_level = 1; // "DEBUG", "INFO", "WARN", "ERROR"
+  string message = 2;
+  string step_id = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  map<string, string> metadata = 5;
+}
+
+// ========== 工作流定义元数据 ==========
+
+message WorkflowDefinitionInfo {
+  string definition_id = 1;
+  string name = 2;
+  string description = 3;
+  string version = 4;
+  bool is_default = 5;
+  bool is_active = 6;
+  WorkflowDefinitionMetadata metadata = 7;
+}
+
+message WorkflowDefinitionMetadata {
+  string created_by = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+  int32 execution_count = 4;
+  float success_rate = 5;
+  float avg_execution_time_ms = 6;
+  repeated string tags = 7;
+  map<string, string> custom_metadata = 8;
+}
+
+// ========== 服务健康状态相关消息 ==========
+
+message GetServicesHealthRequest {
+  repeated string service_names = 1; // specific services to check
+  bool include_details = 2;
+}
+
+message GetServicesHealthResponse {
+  map<string, ServiceHealthStatus> services_health = 1;
+  OverallHealthStatus overall_status = 2;
+  google.protobuf.Timestamp checked_at = 3;
+}
+
+message ServiceHealthStatus {
+  string service_name = 1;
+  string status = 2; // "SERVING", "NOT_SERVING", "SERVICE_UNKNOWN"
+  string version = 3;
+  google.protobuf.Timestamp last_check = 4;
+  ServiceHealthDetails details = 5;
+}
+
+message ServiceHealthDetails {
+  int64 response_time_ms = 1;
+  string error_message = 2;
+  map<string, string> service_metadata = 3;
+  repeated string available_methods = 4;
+}
+
+message OverallHealthStatus {
+  string status = 1; // "HEALTHY", "DEGRADED", "UNHEALTHY"
+  int32 healthy_services = 2;
+  int32 total_services = 3;
+  repeated string unavailable_services = 4;
+  string health_summary = 5;
+}

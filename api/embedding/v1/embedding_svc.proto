@@ -1,0 +1,308 @@
+syntax = "proto3";
+
+package api.embedding.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "api/common/v1/common.proto";
+import "api/common/v1/errors.proto";
+import "validate/validate.proto";
+
+option go_package = "rag/api/embedding/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.embedding.v1";
+
+// Embedding服务 - 文本向量化、批量处理和模型管理
+service Embedding {
+  // 文本向量化
+  rpc EmbedText(EmbedTextRequest) returns (EmbedTextResponse) {
+    option (google.api.http) = {
+      post: "/v1/embed/text"
+      body: "*"
+    };
+  }
+  
+  // 批量向量化
+  rpc EmbedBatch(EmbedBatchRequest) returns (EmbedBatchResponse) {
+    option (google.api.http) = {
+      post: "/v1/embed/batch"
+      body: "*"
+    };
+  }
+  
+  // 异步批量向量化
+  rpc EmbedBatchAsync(EmbedBatchAsyncRequest) returns (EmbedBatchAsyncResponse) {
+    option (google.api.http) = {
+      post: "/v1/embed/batch-async"
+      body: "*"
+    };
+  }
+  
+  // 获取异步任务状态
+  rpc GetEmbeddingTaskStatus(GetEmbeddingTaskStatusRequest) returns (GetEmbeddingTaskStatusResponse) {
+    option (google.api.http) = {
+      get: "/v1/embed/tasks/{task_id}"
+    };
+  }
+  
+  // 获取模型信息
+  rpc GetModelInfo(GetModelInfoRequest) returns (GetModelInfoResponse) {
+    option (google.api.http) = {
+      get: "/v1/models/{model_name}"
+    };
+  }
+  
+  // 列出可用模型
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse) {
+    option (google.api.http) = {
+      get: "/v1/models"
+    };
+  }
+  
+  // 计算相似度
+  rpc ComputeSimilarity(ComputeSimilarityRequest) returns (ComputeSimilarityResponse) {
+    option (google.api.http) = {
+      post: "/v1/similarity"
+      body: "*"
+    };
+  }
+  
+  // 健康检查
+  rpc HealthCheck(google.protobuf.Empty) returns (api.common.v1.HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/v1/health"
+    };
+  }
+}
+
+// ========== 向量化相关消息 ==========
+
+message EmbeddingVector {
+  repeated float values = 1;
+}
+
+message EmbedTextRequest {
+  string text = 1 [(validate.rules).string.min_len = 1];
+  string model_name = 2;
+  EmbeddingOptions options = 3;
+}
+
+message EmbeddingOptions {
+  bool normalize = 1;
+  string pooling_strategy = 2; // "mean", "max", "cls", "last_token"
+  int32 max_length = 3 [(validate.rules).int32 = {gte: 1, lte: 8192}];
+  bool truncate = 4;
+  string instruction = 5; // for instruction-based models
+  map<string, string> model_parameters = 6;
+}
+
+message EmbedTextResponse {
+  repeated float embedding = 1;
+  int32 dimension = 2;
+  string model_used = 3;
+  EmbeddingMetadata metadata = 4;
+}
+
+message EmbeddingMetadata {
+  int32 token_count = 1;
+  int64 processing_time_ms = 2;
+  bool was_truncated = 3;
+  string encoding_format = 4; // "float32", "int8", "binary"
+  map<string, string> model_metadata = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+// ========== 批量向量化相关消息 ==========
+
+message EmbedBatchRequest {
+  repeated string texts = 1 [(validate.rules).repeated.min_items = 1];
+  string model_name = 2;
+  EmbeddingOptions options = 3;
+  string batch_id = 4;
+}
+
+message EmbedBatchResponse {
+  string batch_id = 1;
+  repeated EmbeddingResult results = 2;
+  BatchEmbeddingMetadata metadata = 3;
+}
+
+message EmbeddingResult {
+  int32 index = 1;
+  repeated float embedding = 2;
+  api.common.v1.ProcessingStatus status = 3;
+  string error_message = 4;
+  EmbeddingMetadata embedding_metadata = 5;
+}
+
+message BatchEmbeddingMetadata {
+  int32 total_texts = 1;
+  int32 successful_embeddings = 2;
+  int32 failed_embeddings = 3;
+  int64 total_processing_time_ms = 4;
+  string model_used = 5;
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+}
+
+// ========== 异步批量向量化相关消息 ==========
+
+message EmbedBatchAsyncRequest {
+  repeated string texts = 1 [(validate.rules).repeated.min_items = 1];
+  string model_name = 2;
+  EmbeddingOptions options = 3;
+  string callback_url = 4;
+  int32 priority = 5 [(validate.rules).int32 = {gte: 1, lte: 10}];
+}
+
+message EmbedBatchAsyncResponse {
+  string task_id = 1;
+  api.common.v1.ProcessingStatus status = 2;
+  int32 estimated_processing_time_seconds = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message GetEmbeddingTaskStatusRequest {
+  string task_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetEmbeddingTaskStatusResponse {
+  string task_id = 1;
+  api.common.v1.TaskStatus task_status = 2;
+  EmbedBatchResponse result = 3; // only populated if completed
+}
+
+// ========== 模型信息相关消息 ==========
+
+message GetModelInfoRequest {
+  string model_name = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetModelInfoResponse {
+  ModelInfo model_info = 1;
+}
+
+message ListModelsRequest {
+  api.common.v1.PaginationRequest pagination = 1;
+  repeated api.common.v1.Filter filters = 2;
+}
+
+message ListModelsResponse {
+  repeated ModelInfo models = 1;
+  api.common.v1.PaginationResponse pagination = 2;
+}
+
+message ModelInfo {
+  string name = 1;
+  string display_name = 2;
+  string description = 3;
+  string version = 4;
+  int32 dimension = 5;
+  int32 max_sequence_length = 6;
+  repeated string supported_languages = 7;
+  ModelCapabilities capabilities = 8;
+  ModelPerformance performance = 9;
+  ModelConfiguration configuration = 10;
+  bool is_available = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message ModelCapabilities {
+  bool supports_instruction = 1;
+  bool supports_multiple_languages = 2;
+  bool supports_domain_adaptation = 3;
+  repeated string pooling_strategies = 4;
+  repeated string encoding_formats = 5;
+  bool supports_batch_processing = 6;
+}
+
+message ModelPerformance {
+  float avg_processing_time_ms = 1;
+  int32 max_throughput_per_second = 2;
+  int64 memory_usage_mb = 3;
+  map<string, float> benchmark_scores = 4;
+}
+
+message ModelConfiguration {
+  string model_type = 1; // "transformer", "sentence_transformer", "custom"
+  string architecture = 2; // "bert", "roberta", "sentence-bert", etc.
+  map<string, string> default_parameters = 3;
+  repeated string required_parameters = 4;
+  repeated string optional_parameters = 5;
+}
+
+// ========== 相似度计算相关消息 ==========
+
+message ComputeSimilarityRequest {
+  oneof embedding_source_a {
+    string text_a = 1;
+    EmbeddingVector embedding_a = 2;
+  }
+  
+  oneof embedding_source_b {
+    string text_b = 3;
+    EmbeddingVector embedding_b = 4;
+  }
+  
+  string similarity_metric = 5; // "cosine", "dot_product", "euclidean", "manhattan"
+  string model_name = 6; // required if using text inputs
+  EmbeddingOptions options = 7;
+}
+
+message ComputeSimilarityResponse {
+  float similarity_score = 1;
+  string metric_used = 2;
+  SimilarityMetadata metadata = 3;
+}
+
+message SimilarityMetadata {
+  int32 dimension = 1;
+  bool embeddings_normalized = 2;
+  int64 computation_time_ms = 3;
+  map<string, string> debug_info = 4;
+}
+
+// ========== 批量相似度计算相关消息 ==========
+
+message ComputeBatchSimilarityRequest {
+  repeated SimilarityPair pairs = 1 [(validate.rules).repeated.min_items = 1];
+  string similarity_metric = 2;
+  string model_name = 3;
+  EmbeddingOptions options = 4;
+}
+
+message SimilarityPair {
+  oneof source_a {
+    string text_a = 1;
+    EmbeddingVector embedding_a = 2;
+  }
+  
+  oneof source_b {
+    string text_b = 3;
+    EmbeddingVector embedding_b = 4;
+  }
+  
+  string pair_id = 5;
+}
+
+message ComputeBatchSimilarityResponse {
+  repeated SimilarityResult results = 1;
+  BatchSimilarityMetadata metadata = 2;
+}
+
+message SimilarityResult {
+  string pair_id = 1;
+  float similarity_score = 2;
+  api.common.v1.ProcessingStatus status = 3;
+  string error_message = 4;
+}
+
+message BatchSimilarityMetadata {
+  int32 total_pairs = 1;
+  int32 successful_computations = 2;
+  int32 failed_computations = 3;
+  string metric_used = 4;
+  int64 total_processing_time_ms = 5;
+}

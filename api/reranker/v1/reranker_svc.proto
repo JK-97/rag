@@ -1,0 +1,418 @@
+syntax = "proto3";
+
+package api.reranker.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "api/common/v1/common.proto";
+import "api/common/v1/errors.proto";
+import "validate/validate.proto";
+
+option go_package = "rag/api/reranker/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.reranker.v1";
+
+// Reranker服务 - 文档重排序和相关性评分
+service Reranker {
+  // 文档重排序
+  rpc RerankDocuments(RerankDocumentsRequest) returns (RerankDocumentsResponse) {
+    option (google.api.http) = {
+      post: "/v1/rerank/documents"
+      body: "*"
+    };
+  }
+  
+  // 相关性评分
+  rpc ScoreRelevance(ScoreRelevanceRequest) returns (ScoreRelevanceResponse) {
+    option (google.api.http) = {
+      post: "/v1/score/relevance"
+      body: "*"
+    };
+  }
+  
+  // 批量相关性评分
+  rpc ScoreBatchRelevance(ScoreBatchRelevanceRequest) returns (ScoreBatchRelevanceResponse) {
+    option (google.api.http) = {
+      post: "/v1/score/batch"
+      body: "*"
+    };
+  }
+  
+  // 配置排序模型
+  rpc ConfigureModel(ConfigureModelRequest) returns (ConfigureModelResponse) {
+    option (google.api.http) = {
+      post: "/v1/models/configure"
+      body: "*"
+    };
+  }
+  
+  // 获取模型信息
+  rpc GetModelInfo(GetModelInfoRequest) returns (GetModelInfoResponse) {
+    option (google.api.http) = {
+      get: "/v1/models/{model_name}"
+    };
+  }
+  
+  // 列出可用模型
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse) {
+    option (google.api.http) = {
+      get: "/v1/models"
+    };
+  }
+  
+  // 模型性能测试
+  rpc BenchmarkModel(BenchmarkModelRequest) returns (BenchmarkModelResponse) {
+    option (google.api.http) = {
+      post: "/v1/models/{model_name}/benchmark"
+      body: "*"
+    };
+  }
+  
+  // 健康检查
+  rpc HealthCheck(google.protobuf.Empty) returns (api.common.v1.HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/v1/health"
+    };
+  }
+}
+
+// ========== 文档重排序相关消息 ==========
+
+message RerankDocumentsRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  repeated DocumentToRerank documents = 2 [(validate.rules).repeated.min_items = 1];
+  RerankingOptions options = 3;
+}
+
+message DocumentToRerank {
+  string document_id = 1;
+  string chunk_id = 2;
+  string content = 3 [(validate.rules).string.min_len = 1];
+  string title = 4;
+  float initial_score = 5;
+  map<string, string> metadata = 6;
+  int32 original_rank = 7;
+}
+
+message RerankingOptions {
+  string model_name = 1;
+  int32 top_k = 2 [(validate.rules).int32 = {gte: 1, lte: 1000}];
+  float score_threshold = 3 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  RerankingStrategy strategy = 4;
+  bool normalize_scores = 5;
+  bool preserve_order_for_ties = 6;
+  map<string, string> model_parameters = 7;
+}
+
+message RerankingStrategy {
+  string primary_method = 1; // "cross_encoder", "pointwise", "pairwise", "listwise"
+  repeated ScoringDimension scoring_dimensions = 2;
+  ScoreAggregation aggregation = 3;
+  repeated string fallback_methods = 4;
+}
+
+message ScoringDimension {
+  string name = 1; // "semantic_relevance", "content_quality", "freshness", "authority"
+  float weight = 2 [(validate.rules).float = {gte: 0.0, lte: 1.0}];
+  map<string, string> parameters = 3;
+}
+
+message ScoreAggregation {
+  string method = 1; // "weighted_sum", "max", "harmonic_mean", "geometric_mean"
+  repeated float weights = 2;
+  float bias = 3;
+}
+
+message RerankDocumentsResponse {
+  repeated RankedDocument ranked_documents = 1;
+  RerankingMetadata metadata = 2;
+}
+
+message RankedDocument {
+  string document_id = 1;
+  string chunk_id = 2;
+  string content = 3;
+  float rerank_score = 4;
+  float initial_score = 5;
+  int32 new_rank = 6;
+  int32 original_rank = 7;
+  float score_improvement = 8;
+  RankingDetails ranking_details = 9;
+}
+
+message RankingDetails {
+  repeated DimensionScore dimension_scores = 1;
+  float confidence = 2;
+  string ranking_explanation = 3;
+  map<string, float> feature_scores = 4;
+}
+
+message DimensionScore {
+  string dimension_name = 1;
+  float score = 2;
+  float weight = 3;
+  float contribution = 4;
+}
+
+message RerankingMetadata {
+  string model_used = 1;
+  int32 total_documents = 2;
+  int32 reranked_documents = 3;
+  int64 reranking_time_ms = 4;
+  RerankingStrategy applied_strategy = 5;
+  map<string, string> debug_info = 6;
+  google.protobuf.Timestamp processed_at = 7;
+}
+
+// ========== 相关性评分相关消息 ==========
+
+message ScoreRelevanceRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  string document_content = 2 [(validate.rules).string.min_len = 1];
+  ScoringOptions options = 3;
+}
+
+message ScoringOptions {
+  string model_name = 1;
+  repeated string scoring_aspects = 2; // "semantic", "lexical", "structural", "contextual"
+  bool include_explanation = 3;
+  bool normalize_score = 4;
+  map<string, string> model_parameters = 5;
+}
+
+message ScoreRelevanceResponse {
+  float relevance_score = 1;
+  repeated AspectScore aspect_scores = 2;
+  ScoringExplanation explanation = 3;
+  ScoringMetadata metadata = 4;
+}
+
+message AspectScore {
+  string aspect_name = 1;
+  float score = 2;
+  float confidence = 3;
+  string description = 4;
+}
+
+message ScoringExplanation {
+  string summary = 1;
+  repeated string key_factors = 2;
+  repeated string matching_phrases = 3;
+  repeated string quality_indicators = 4;
+  map<string, string> detailed_analysis = 5;
+}
+
+message ScoringMetadata {
+  string model_used = 1;
+  int64 scoring_time_ms = 2;
+  string model_version = 3;
+  map<string, string> debug_info = 4;
+}
+
+// ========== 批量相关性评分相关消息 ==========
+
+message ScoreBatchRelevanceRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  repeated string document_contents = 2 [(validate.rules).repeated.min_items = 1];
+  ScoringOptions options = 3;
+  string batch_id = 4;
+}
+
+message ScoreBatchRelevanceResponse {
+  string batch_id = 1;
+  repeated BatchScoringResult results = 2;
+  BatchScoringMetadata metadata = 3;
+}
+
+message BatchScoringResult {
+  int32 index = 1;
+  float relevance_score = 2;
+  repeated AspectScore aspect_scores = 3;
+  api.common.v1.ProcessingStatus status = 4;
+  string error_message = 5;
+}
+
+message BatchScoringMetadata {
+  int32 total_documents = 1;
+  int32 successful_scores = 2;
+  int32 failed_scores = 3;
+  string model_used = 4;
+  int64 total_scoring_time_ms = 5;
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+}
+
+// ========== 模型配置相关消息 ==========
+
+message ConfigureModelRequest {
+  string model_name = 1 [(validate.rules).string.min_len = 1];
+  ModelConfiguration configuration = 2;
+  bool make_default = 3;
+}
+
+message ModelConfiguration {
+  map<string, string> parameters = 1;
+  repeated ScoringDimension scoring_dimensions = 2;
+  ScoreAggregation aggregation_config = 3;
+  PerformanceSettings performance = 4;
+  map<string, string> custom_settings = 5;
+}
+
+message PerformanceSettings {
+  int32 max_sequence_length = 1;
+  int32 batch_size = 2;
+  bool enable_caching = 3;
+  int32 cache_ttl_seconds = 4;
+  bool enable_parallel_processing = 5;
+}
+
+message ConfigureModelResponse {
+  string model_name = 1;
+  ModelConfiguration applied_configuration = 2;
+  ConfigurationStatus status = 3;
+  repeated string validation_warnings = 4;
+}
+
+message ConfigurationStatus {
+  bool is_configured = 1;
+  bool is_active = 2;
+  string status_message = 3;
+  google.protobuf.Timestamp configured_at = 4;
+}
+
+// ========== 模型信息相关消息 ==========
+
+message GetModelInfoRequest {
+  string model_name = 1 [(validate.rules).string.min_len = 1];
+  bool include_performance_metrics = 2;
+}
+
+message GetModelInfoResponse {
+  ModelInfo model_info = 1;
+}
+
+message ListModelsRequest {
+  api.common.v1.PaginationRequest pagination = 1;
+  repeated api.common.v1.Filter filters = 2;
+  bool include_performance_metrics = 3;
+}
+
+message ListModelsResponse {
+  repeated ModelInfo models = 1;
+  api.common.v1.PaginationResponse pagination = 2;
+}
+
+message ModelInfo {
+  string name = 1;
+  string display_name = 2;
+  string description = 3;
+  string version = 4;
+  string model_type = 5; // "cross_encoder", "bi_encoder", "neural_ranking"
+  ModelCapabilities capabilities = 6;
+  ModelPerformanceMetrics performance_metrics = 7;
+  ModelConfiguration current_configuration = 8;
+  bool is_available = 9;
+  bool is_default = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message ModelCapabilities {
+  int32 max_sequence_length = 1;
+  repeated string supported_languages = 2;
+  repeated string scoring_aspects = 3;
+  bool supports_batch_processing = 4;
+  bool supports_explanation = 5;
+  bool supports_custom_parameters = 6;
+  repeated string ranking_methods = 7;
+}
+
+message ModelPerformanceMetrics {
+  float avg_scoring_time_ms = 1;
+  int32 max_throughput_per_second = 2;
+  float accuracy_score = 3;
+  float precision_at_k = 4;
+  float ndcg_at_k = 5;
+  map<string, float> benchmark_scores = 6;
+  google.protobuf.Timestamp last_benchmarked = 7;
+}
+
+// ========== 性能测试相关消息 ==========
+
+message BenchmarkModelRequest {
+  string model_name = 1 [(validate.rules).string.min_len = 1];
+  BenchmarkConfig config = 2;
+}
+
+message BenchmarkConfig {
+  repeated BenchmarkDataset datasets = 1;
+  repeated string metrics = 2; // "accuracy", "precision", "recall", "ndcg", "map"
+  int32 num_iterations = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  bool include_latency_test = 4;
+  bool include_throughput_test = 5;
+}
+
+message BenchmarkDataset {
+  string name = 1;
+  string description = 2;
+  repeated BenchmarkQuery queries = 3;
+}
+
+message BenchmarkQuery {
+  string query = 1;
+  repeated string relevant_documents = 2;
+  repeated string irrelevant_documents = 3;
+  map<string, string> metadata = 4;
+}
+
+message BenchmarkModelResponse {
+  string model_name = 1;
+  BenchmarkResults results = 2;
+  BenchmarkMetadata metadata = 3;
+}
+
+message BenchmarkResults {
+  repeated DatasetResults dataset_results = 1;
+  OverallMetrics overall_metrics = 2;
+  PerformanceResults performance_results = 3;
+}
+
+message DatasetResults {
+  string dataset_name = 1;
+  map<string, float> metrics = 2;
+  repeated QueryResult query_results = 3;
+}
+
+message QueryResult {
+  string query = 1;
+  float score = 2;
+  int32 num_relevant_found = 3;
+  int32 num_irrelevant_found = 4;
+}
+
+message OverallMetrics {
+  float avg_accuracy = 1;
+  float avg_precision = 2;
+  float avg_recall = 3;
+  float avg_f1_score = 4;
+  float avg_ndcg = 5;
+  float consistency_score = 6;
+}
+
+message PerformanceResults {
+  float avg_latency_ms = 1;
+  float p95_latency_ms = 2;
+  float p99_latency_ms = 3;
+  int32 max_throughput_qps = 4;
+  float memory_usage_mb = 5;
+}
+
+message BenchmarkMetadata {
+  int32 total_queries_tested = 1;
+  int32 total_documents_tested = 2;
+  int64 total_benchmark_time_ms = 3;
+  BenchmarkConfig config_used = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp completed_at = 6;
+}

@@ -1,0 +1,1016 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/preprocessor_svc.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Preprocessor"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/config": {
+      "get": {
+        "summary": "获取处理器配置",
+        "operationId": "Preprocessor_GetProcessorConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ProcessorConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Preprocessor"
+        ]
+      },
+      "put": {
+        "summary": "更新处理器配置",
+        "operationId": "Preprocessor_UpdateProcessorConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ProcessorConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateProcessorConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Preprocessor"
+        ]
+      }
+    },
+    "/v1/expand-synonyms": {
+      "post": {
+        "summary": "同义词扩展",
+        "operationId": "Preprocessor_ExpandSynonyms",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ExpandSynonymsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ExpandSynonymsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Preprocessor"
+        ]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "summary": "健康检查",
+        "operationId": "Preprocessor_HealthCheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Preprocessor"
+        ]
+      }
+    },
+    "/v1/process-batch": {
+      "post": {
+        "summary": "批量查询处理",
+        "operationId": "Preprocessor_ProcessBatchQueries",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ProcessBatchQueriesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ProcessBatchQueriesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Preprocessor"
+        ]
+      }
+    },
+    "/v1/process-query": {
+      "post": {
+        "summary": "查询预处理",
+        "operationId": "Preprocessor_ProcessQuery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ProcessQueryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ProcessQueryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Preprocessor"
+        ]
+      }
+    },
+    "/v1/rewrite-query": {
+      "post": {
+        "summary": "查询改写",
+        "operationId": "Preprocessor_RewriteQuery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RewriteQueryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RewriteQueryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Preprocessor"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1BatchProcessingMetadata": {
+      "type": "object",
+      "properties": {
+        "totalQueries": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "successfulProcesses": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "failedProcesses": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalProcessingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1BatchQueryResult": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "originalQuery": {
+          "type": "string"
+        },
+        "processedQuery": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ProcessingStatus"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "processingMetadata": {
+          "$ref": "#/definitions/v1ProcessingMetadata"
+        }
+      }
+    },
+    "v1CleaningOptions": {
+      "type": "object",
+      "properties": {
+        "removeSpecialChars": {
+          "type": "boolean"
+        },
+        "normalizeWhitespace": {
+          "type": "boolean"
+        },
+        "fixEncoding": {
+          "type": "boolean"
+        },
+        "removeDuplicates": {
+          "type": "boolean"
+        },
+        "stopWords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "normalizationForm": {
+          "type": "string",
+          "title": "\"NFC\", \"NFD\", \"NFKC\", \"NFKD\""
+        }
+      }
+    },
+    "v1DefaultProcessingOptions": {
+      "type": "object",
+      "properties": {
+        "processingOptions": {
+          "$ref": "#/definitions/v1ProcessingOptions"
+        },
+        "cleaningOptions": {
+          "$ref": "#/definitions/v1CleaningOptions"
+        },
+        "rewritingOptions": {
+          "$ref": "#/definitions/v1RewritingOptions"
+        },
+        "synonymOptions": {
+          "$ref": "#/definitions/v1SynonymOptions"
+        }
+      }
+    },
+    "v1ExpandSynonymsRequest": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1SynonymOptions"
+        },
+        "focusWords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "specific words to expand"
+        }
+      }
+    },
+    "v1ExpandSynonymsResponse": {
+      "type": "object",
+      "properties": {
+        "originalText": {
+          "type": "string"
+        },
+        "expandedWords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ExpandedWord"
+          }
+        },
+        "expandedQueries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1SynonymMetadata"
+        }
+      }
+    },
+    "v1ExpandedWord": {
+      "type": "object",
+      "properties": {
+        "originalWord": {
+          "type": "string"
+        },
+        "synonyms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Synonym"
+          }
+        },
+        "partOfSpeech": {
+          "type": "string"
+        },
+        "wordMetadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"SERVING\", \"NOT_SERVING\", \"SERVICE_UNKNOWN\""
+        },
+        "service": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "健康检查响应"
+    },
+    "v1ModelConfig": {
+      "type": "object",
+      "properties": {
+        "rewritingModel": {
+          "type": "string"
+        },
+        "languageDetectionModel": {
+          "type": "string"
+        },
+        "synonymSources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SynonymSourceConfig"
+          }
+        },
+        "modelParameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1PerformanceConfig": {
+      "type": "object",
+      "properties": {
+        "maxConcurrentRequests": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "requestTimeoutMs": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "batchSizeLimit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "enableCaching": {
+          "type": "boolean"
+        },
+        "cacheTtlSeconds": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ProcessBatchQueriesRequest": {
+      "type": "object",
+      "properties": {
+        "queries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "options": {
+          "$ref": "#/definitions/v1ProcessingOptions"
+        },
+        "batchId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ProcessBatchQueriesResponse": {
+      "type": "object",
+      "properties": {
+        "batchId": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BatchQueryResult"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1BatchProcessingMetadata"
+        }
+      }
+    },
+    "v1ProcessQueryRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1ProcessingOptions"
+        },
+        "context": {
+          "$ref": "#/definitions/v1QueryContext"
+        }
+      }
+    },
+    "v1ProcessQueryResponse": {
+      "type": "object",
+      "properties": {
+        "originalQuery": {
+          "type": "string"
+        },
+        "processedQuery": {
+          "type": "string"
+        },
+        "processingSteps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ProcessingStep"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1ProcessingMetadata"
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1QueryAlternative"
+          }
+        }
+      }
+    },
+    "v1ProcessingMetadata": {
+      "type": "object",
+      "properties": {
+        "detectedLanguage": {
+          "type": "string"
+        },
+        "processingConfidence": {
+          "type": "number",
+          "format": "float"
+        },
+        "processingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "appliedStrategies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "debugInfo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "processedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ProcessingOptions": {
+      "type": "object",
+      "properties": {
+        "enableCleaning": {
+          "type": "boolean"
+        },
+        "enableRewriting": {
+          "type": "boolean"
+        },
+        "enableSynonymExpansion": {
+          "type": "boolean"
+        },
+        "enableSpellCorrection": {
+          "type": "boolean"
+        },
+        "enableLanguageDetection": {
+          "type": "boolean"
+        },
+        "targetLanguage": {
+          "type": "string"
+        },
+        "cleaningOptions": {
+          "$ref": "#/definitions/v1CleaningOptions"
+        },
+        "rewritingOptions": {
+          "$ref": "#/definitions/v1RewritingOptions"
+        },
+        "synonymOptions": {
+          "$ref": "#/definitions/v1SynonymOptions"
+        }
+      }
+    },
+    "v1ProcessingStatus": {
+      "type": "string",
+      "enum": [
+        "PROCESSING_STATUS_UNSPECIFIED",
+        "PROCESSING_STATUS_PENDING",
+        "PROCESSING_STATUS_PROCESSING",
+        "PROCESSING_STATUS_COMPLETED",
+        "PROCESSING_STATUS_FAILED",
+        "PROCESSING_STATUS_CANCELLED"
+      ],
+      "default": "PROCESSING_STATUS_UNSPECIFIED",
+      "title": "处理状态"
+    },
+    "v1ProcessingStep": {
+      "type": "object",
+      "properties": {
+        "stepName": {
+          "type": "string"
+        },
+        "inputText": {
+          "type": "string"
+        },
+        "outputText": {
+          "type": "string"
+        },
+        "confidenceScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "stepMetadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "processedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ProcessorConfig": {
+      "type": "object",
+      "properties": {
+        "defaultOptions": {
+          "$ref": "#/definitions/v1DefaultProcessingOptions"
+        },
+        "modelConfig": {
+          "$ref": "#/definitions/v1ModelConfig"
+        },
+        "performanceConfig": {
+          "$ref": "#/definitions/v1PerformanceConfig"
+        },
+        "customSettings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ProcessorConfigResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1ProcessorConfig"
+        },
+        "version": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1QueryAlternative": {
+      "type": "object",
+      "properties": {
+        "queryText": {
+          "type": "string"
+        },
+        "confidenceScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "generationMethod": {
+          "type": "string",
+          "title": "\"rewrite\", \"synonym_expansion\", \"paraphrase\""
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1QueryContext": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "查询上下文"
+    },
+    "v1RewriteChange": {
+      "type": "object",
+      "properties": {
+        "originalText": {
+          "type": "string"
+        },
+        "rewrittenText": {
+          "type": "string"
+        },
+        "changeType": {
+          "type": "string",
+          "title": "\"grammar\", \"vocabulary\", \"structure\""
+        },
+        "reason": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "v1RewriteQueryRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/definitions/v1RewritingOptions"
+        },
+        "context": {
+          "$ref": "#/definitions/v1QueryContext"
+        }
+      }
+    },
+    "v1RewriteQueryResponse": {
+      "type": "object",
+      "properties": {
+        "originalQuery": {
+          "type": "string"
+        },
+        "rewrittenQueries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RewrittenQuery"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1RewritingMetadata"
+        }
+      }
+    },
+    "v1RewritingMetadata": {
+      "type": "object",
+      "properties": {
+        "modelUsed": {
+          "type": "string"
+        },
+        "processingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "detectedIssues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "debugInfo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1RewritingOptions": {
+      "type": "object",
+      "properties": {
+        "rewriteStrategy": {
+          "type": "string",
+          "title": "\"grammar_fix\", \"formalization\", \"clarification\", \"expansion\""
+        },
+        "confidenceThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "maxAlternatives": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "preserveIntent": {
+          "type": "boolean"
+        },
+        "domainKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1RewrittenQuery": {
+      "type": "object",
+      "properties": {
+        "queryText": {
+          "type": "string"
+        },
+        "confidenceScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "rewriteType": {
+          "type": "string",
+          "title": "\"grammar_correction\", \"formalization\", \"clarification\""
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RewriteChange"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1Synonym": {
+      "type": "object",
+      "properties": {
+        "word": {
+          "type": "string"
+        },
+        "similarityScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "source": {
+          "type": "string",
+          "title": "\"wordnet\", \"custom\", \"embedding\""
+        },
+        "relationType": {
+          "type": "string",
+          "title": "\"synonym\", \"hyponym\", \"hypernym\""
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1SynonymMetadata": {
+      "type": "object",
+      "properties": {
+        "sourcesUsed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "totalSynonymsFound": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "processingTimeMs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "languageDetected": {
+          "type": "string"
+        },
+        "debugInfo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1SynonymOptions": {
+      "type": "object",
+      "properties": {
+        "synonymSources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "\"wordnet\", \"custom\", \"domain_specific\""
+        },
+        "similarityThreshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "maxSynonymsPerWord": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "includeHyponyms": {
+          "type": "boolean"
+        },
+        "includeHypernyms": {
+          "type": "boolean"
+        },
+        "language": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SynonymSourceConfig": {
+      "type": "object",
+      "properties": {
+        "sourceName": {
+          "type": "string"
+        },
+        "sourceType": {
+          "type": "string",
+          "title": "\"database\", \"api\", \"file\""
+        },
+        "connectionString": {
+          "type": "string"
+        },
+        "configuration": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1UpdateProcessorConfigRequest": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1ProcessorConfig"
+        },
+        "updateFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
